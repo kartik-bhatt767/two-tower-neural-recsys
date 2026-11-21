@@ -68,6 +68,9 @@ $$\mathcal{L} = -\sum_{i=1}^B \log \frac{\exp(u_i^T v_i / \tau)}{\sum_{j=1}^B \e
 | **NDCG@5** | **0.821** | > 0.70 | Highly ranked position weighting |
 | **P95 Latency** | **0.18 ms** | < 5.0 ms | Sub-millisecond real-time retrieval speed |
 
+### Training Loss Convergence (InfoNCE / In-Batch Softmax)
+![Training Loss Curve](assets/training_loss.png)
+
 ---
 
 ## 🚀 Quickstart & Interactive Workbench
