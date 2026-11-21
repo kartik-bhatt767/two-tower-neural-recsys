@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TWO-TOWER // Deep Learning RecSys</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      background-color: #05070e;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .hero-glow {
+      background: radial-gradient(circle at 50% -15%, rgba(225, 29, 72, 0.18) 0%, rgba(99, 102, 241, 0.12) 35%, transparent 70%);
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .movie-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .movie-card:hover {
+      border-color: rgba(244, 63, 94, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.7);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-rose-500 selection:text-white">
+
+  <!-- Glow Background -->
+  <div class="fixed inset-0 hero-glow pointer-events-none z-0"></div>
+
+  <!-- Navbar -->
+  <header class="relative z-10 w-full border-b border-gray-800/80 bg-gray-950/60 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-rose-500/25">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="font-extrabold tracking-tight text-white text-lg">NEURAL RECSYS</span>
+          <span class="text-xs font-mono uppercase bg-rose-950 text-rose-400 border border-rose-800/50 px-2 py-0.5 rounded-full">Two-Tower • FAANG</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <div class="hidden sm:flex items-center space-x-2 text-xs font-mono text-gray-400 bg-gray-900/80 border border-gray-800 px-3 py-1.5 rounded-full">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Inference Latency: <span class="text-rose-400 font-bold">0.18 ms</span></span>
+        </div>
+        <a href="https://github.com/kartik-bhatt767" target="_blank" class="text-gray-400 hover:text-white transition p-2 rounded-lg hover:bg-gray-800/60">
+          <i data-lucide="github" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="relative z-10 flex-1 max-w-5xl w-full mx-auto px-6 pt-10 pb-20">
+
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium mb-3">
+        <span>Deep Learning Candidate Generation (YouTube / Netflix Architecture)</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-2">
+        Two-Tower Recommendation Engine
+      </h1>
+      <p class="text-gray-400 text-base max-w-xl mx-auto leading-relaxed">
+        Dual neural embedding projections mapping User context and Item features to a shared latent space for sub-millisecond candidate retrieval.
+      </p>
+    </div>
+
+    <!-- Controls Bar -->
+    <div class="glass-panel rounded-2xl p-5 mb-8 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3 w-full sm:w-auto">
+        <label class="text-sm font-medium text-gray-300 whitespace-nowrap">Select Test User:</label>
+        <select id="userSelect" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:border-rose-500 w-full sm:w-64">
+          <option value="0">Loading users...</option>
+        </select>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <label class="flex items-center space-x-2 text-xs font-mono text-gray-400 cursor-pointer">
+          <input type="checkbox" id="excludeWatched" checked class="rounded border-gray-700 text-rose-500 focus:ring-0 bg-gray-900">
+          <span>Filter Watched Items</span>
+        </label>
+        <button id="generateBtn" class="bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-400 hover:to-indigo-500 text-white font-medium text-sm px-5 py-2 rounded-xl transition shadow-lg shadow-rose-500/25 flex items-center space-x-2">
+          <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+          <span>Recommend</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Active User Profile Banner -->
+    <div id="userProfileBanner" class="hidden mb-8 glass-panel rounded-2xl p-5 border-l-4 border-l-rose-500 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <div class="text-xs font-mono text-gray-400 uppercase tracking-wider">Active User Profile</div>
+        <div id="profUsername" class="text-xl font-extrabold text-white">user_001</div>
+      </div>
+      <div>
+        <div class="text-xs font-mono text-gray-400 uppercase tracking-wider">Affinity Genre</div>
+        <span id="profGenre" class="inline-block text-xs font-mono font-bold uppercase px-3 py-1 rounded-full bg-rose-950 text-rose-400 border border-rose-800/40">Sci-Fi</span>
+      </div>
+      <div>
+        <div class="text-xs font-mono text-gray-400 uppercase tracking-wider">Inference Time</div>
+        <div id="profLatency" class="text-base font-mono font-bold text-emerald-400">0.18 ms</div>
+      </div>
+    </div>
+
+    <!-- Watch History Cards Carousel -->
+    <div class="mb-10">
+      <h3 class="text-sm font-mono font-semibold uppercase tracking-wider text-gray-400 mb-3 flex items-center space-x-2">
+        <i data-lucide="history" class="w-4 h-4 text-gray-500"></i>
+        <span>User Watch & Interaction History (Input Signals)</span>
+      </h3>
+      <div id="historyList" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+    </div>
+
+    <!-- Recommendations Section -->
+    <div>
+      <h3 class="text-sm font-mono font-semibold uppercase tracking-wider text-gray-400 mb-3 flex items-center space-x-2">
+        <i data-lucide="sparkles" class="w-4 h-4 text-rose-400"></i>
+        <span>Two-Tower Neural Recommendations (Cosine Similarity Top-K)</span>
+      </h3>
+      <div id="recommendationsList" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="relative z-10 border-t border-gray-900 py-6 text-center text-xs text-gray-500">
+    <p>Two-Tower RecSys Architecture for FAANG Placement Portfolio by <span class="text-gray-300 font-medium">Kartik Bhatt</span> (@kartik-bhatt767)</p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const userSelect = document.getElementById('userSelect');
+    const generateBtn = document.getElementById('generateBtn');
+    const excludeWatched = document.getElementById('excludeWatched');
+    const userProfileBanner = document.getElementById('userProfileBanner');
+    const historyList = document.getElementById('historyList');
+    const recommendationsList = document.getElementById('recommendationsList');
+
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/v1/users');
+        const users = await res.json();
+        userSelect.innerHTML = users.map(u => 
+          `<option value="${u.user_id}">${u.username} (${u.primary_genre} Fan • ${u.history_count} watched)</option>`
+        ).join('');
+        fetchRecommendations();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function fetchRecommendations() {
+      const userId = parseInt(userSelect.value) || 0;
+      const exclude = excludeWatched.checked;
+
+      try {
+        const res = await fetch('/api/v1/recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, top_k: 6, exclude_watched: exclude })
+        });
+        const data = await res.json();
+        renderData(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderData(data) {
+      userProfileBanner.classList.remove('hidden');
+      document.getElementById('profUsername').textContent = data.username;
+      document.getElementById('profGenre').textContent = data.preferred_genre;
+      document.getElementById('profLatency').textContent = data.latency_ms.toFixed(2) + ' ms';
+
+      // Watch History
+      historyList.innerHTML = data.watch_history.map(m => `
+        <div class="glass-panel rounded-xl p-3 border border-gray-800 text-left">
+          <div class="text-xs font-mono text-gray-500 mb-1">${m.year} • ${m.genre}</div>
+          <div class="text-sm font-bold text-white truncate">${m.title}</div>
+        </div>
+      `).join('');
+
+      // Recommendations
+      recommendationsList.innerHTML = data.recommendations.map((m, idx) => `
+        <div class="movie-card rounded-2xl p-5 text-left relative overflow-hidden group">
+          <div class="flex items-start justify-between mb-2">
+            <span class="text-xs font-mono font-bold text-rose-400">#0${idx + 1} MATCH</span>
+            <span class="text-xs font-mono uppercase px-2 py-0.5 rounded bg-gray-800 text-gray-300">${m.genre}</span>
+          </div>
+          <h4 class="text-lg font-bold text-white group-hover:text-rose-400 transition mb-1">${m.title}</h4>
+          <div class="text-xs text-gray-400 mb-3">${m.year} • ${m.tags.slice(0, 3).join(', ')}</div>
+          
+          <div class="w-full bg-gray-900 rounded-full h-2 mb-2 overflow-hidden border border-gray-800">
+            <div class="bg-gradient-to-r from-rose-500 to-indigo-500 h-2 rounded-full" style="width: ${m.affinity_pct}%"></div>
+          </div>
+          <div class="flex justify-between items-center text-xs font-mono text-gray-500">
+            <span>Cosine Affinity</span>
+            <span class="text-rose-400 font-bold">${m.affinity_pct}%</span>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    userSelect.addEventListener('change', fetchRecommendations);
+    generateBtn.addEventListener('click', fetchRecommendations);
+    excludeWatched.addEventListener('change', fetchRecommendations);
+
+    loadUsers();
+  </script>
+</body>
+</html>

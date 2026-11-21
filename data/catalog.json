@@ -1,0 +1,22 @@
+[
+  {"id": 1, "title": "Interstellar", "genre": "Sci-Fi", "year": 2014, "tags": ["space", "relativity", "wormhole", "time"]},
+  {"id": 2, "title": "Inception", "genre": "Sci-Fi", "year": 2010, "tags": ["dreams", "subconscious", "heist", "mind-bending"]},
+  {"id": 3, "title": "The Matrix", "genre": "Sci-Fi", "year": 1999, "tags": ["cyberpunk", "simulation", "ai", "dystopia"]},
+  {"id": 4, "title": "Ex Machina", "genre": "Sci-Fi", "year": 2014, "tags": ["turing-test", "ai", "robotics", "ethics"]},
+  {"id": 5, "title": "Blade Runner 2049", "genre": "Sci-Fi", "year": 2017, "tags": ["cyberpunk", "replicant", "detective", "neon"]},
+  {"id": 6, "title": "The Dark Knight", "genre": "Action", "year": 2008, "tags": ["batman", "joker", "vigilante", "chaos"]},
+  {"id": 7, "title": "Gladiator", "genre": "Action", "year": 2000, "tags": ["rome", "warrior", "empire", "revenge"]},
+  {"id": 8, "title": "Mad Max: Fury Road", "genre": "Action", "year": 2015, "tags": ["wasteland", "chase", "post-apocalyptic", "survival"]},
+  {"id": 9, "title": "John Wick", "genre": "Action", "year": 2014, "tags": ["assassin", "underworld", "martial-arts", "vengeance"]},
+  {"id": 10, "title": "Top Gun: Maverick", "genre": "Action", "year": 2022, "tags": ["aviation", "pilot", "dogfight", "navy"]},
+  {"id": 11, "title": "The Social Network", "genre": "Drama", "year": 2010, "tags": ["facebook", "startup", "algorithm", "silicon-valley"]},
+  {"id": 12, "title": "Oppenheimer", "genre": "Drama", "year": 2023, "tags": ["physics", "atomic-bomb", "history", "quantum"]},
+  {"id": 13, "title": "Whiplash", "genre": "Drama", "year": 2014, "tags": ["jazz", "perfectionism", "drummer", "obsession"]},
+  {"id": 14, "title": "Fight Club", "genre": "Drama", "year": 1999, "tags": ["consumerism", "insomnia", "psychological", "anarchy"]},
+  {"id": 15, "title": "Parasite", "genre": "Thriller", "year": 2019, "tags": ["class-divide", "dark-comedy", "deception", "suspense"]},
+  {"id": 16, "title": "Se7en", "genre": "Thriller", "year": 1995, "tags": ["detective", "serial-killer", "noir", "mystery"]},
+  {"id": 17, "title": "Shutter Island", "genre": "Thriller", "year": 2010, "tags": ["asylum", "twist", "psychological", "investigation"]},
+  {"id": 18, "title": "Zodiac", "genre": "Thriller", "year": 2007, "tags": ["journalism", "unsolved", "code-breaking", "cryptogram"]},
+  {"id": 19, "title": "Knives Out", "genre": "Mystery", "year": 2019, "tags": ["whodunnit", "inheritance", "detective", "mansion"]},
+  {"id": 20, "title": "Superbad", "genre": "Comedy", "year": 2007, "tags": ["high-school", "friendship", "party", "coming-of-age"]}
+]
