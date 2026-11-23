@@ -4,9 +4,12 @@
 [![FastAPI](https://img.shields.io/badge/API-FastAPI%20Async-teal.svg)](https://fastapi.tiangolo.com/)
 [![Architecture](https://img.shields.io/badge/Architecture-Two--Tower%20Neural%20Net-rose.svg)](https://research.google/pubs/pub45530/)
 [![Tests](https://img.shields.io/badge/Tests-PyTest%20Passing-brightgreen.svg)](https://docs.pytest.org/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-emerald.svg)](https://kartik-bhatt767.github.io/two-tower-neural-recsys/)
 [![Author](https://img.shields.io/badge/Author-kartik--bhatt767-orange.svg)](https://github.com/kartik-bhatt767)
 
 > **High-Throughput Deep Learning Recommendation System** based on **Google / YouTube's Two-Tower Neural Network Architecture** (Yi et al., RecSys). Maps user watch signals and item metadata into a shared continuous latent space for **sub-millisecond candidate retrieval** across millions of items.
+>
+> 🌐 **Official Public 24/7 Web Demo**: [https://kartik-bhatt767.github.io/two-tower-neural-recsys/](https://kartik-bhatt767.github.io/two-tower-neural-recsys/)
 
 ---
 
