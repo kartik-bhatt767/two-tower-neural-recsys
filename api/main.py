@@ -10,7 +10,7 @@ from src.engine import RecommendationEngine
 
 app = FastAPI(
     title="🎬 Two-Tower Neural Recommendation Microservice",
-    description="FAANG-grade Deep Learning Candidate Retrieval Architecture for sub-millisecond personalized recommendations.",
+    description="High-Throughput Deep Learning Candidate Retrieval Architecture for sub-millisecond personalized recommendations.",
     version="1.0.0"
 )
 
