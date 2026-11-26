@@ -38,30 +38,36 @@ def render_html(embedded_payload_json: str) -> str:
     .font-mono {{
       font-family: 'JetBrains Mono', monospace;
     }}
-    /* Subtle art-directed poster gradients by genre */
+    /* Rich art-directed cinema poster gradients by genre */
     .poster-Sci-Fi {{
-      background: radial-gradient(circle at 80% 15%, rgba(56, 189, 248, 0.22), transparent 55%),
-                  linear-gradient(155deg, #0b1424 0%, #14263f 55%, #090b10 100%);
+      background: radial-gradient(circle at 82% 18%, rgba(56, 189, 248, 0.42), transparent 58%),
+                  radial-gradient(circle at 15% 85%, rgba(99, 102, 241, 0.28), transparent 55%),
+                  linear-gradient(155deg, #0a1f3c 0%, #164070 55%, #091220 100%);
     }}
     .poster-Action {{
-      background: radial-gradient(circle at 80% 15%, rgba(251, 146, 60, 0.22), transparent 55%),
-                  linear-gradient(155deg, #1f110d 0%, #3d1c12 55%, #0c0908 100%);
+      background: radial-gradient(circle at 82% 18%, rgba(249, 115, 22, 0.42), transparent 58%),
+                  radial-gradient(circle at 15% 85%, rgba(225, 29, 72, 0.25), transparent 55%),
+                  linear-gradient(155deg, #2b0f0a 0%, #6b2412 55%, #160806 100%);
     }}
     .poster-Drama {{
-      background: radial-gradient(circle at 80% 15%, rgba(192, 132, 252, 0.20), transparent 55%),
-                  linear-gradient(155deg, #171123 0%, #2b1d45 55%, #0a090e 100%);
+      background: radial-gradient(circle at 82% 18%, rgba(192, 132, 252, 0.40), transparent 58%),
+                  radial-gradient(circle at 15% 85%, rgba(236, 72, 153, 0.22), transparent 55%),
+                  linear-gradient(155deg, #1f1136 0%, #4b227a 55%, #11091d 100%);
     }}
     .poster-Thriller {{
-      background: radial-gradient(circle at 80% 15%, rgba(45, 212, 191, 0.20), transparent 55%),
-                  linear-gradient(155deg, #0b1a18 0%, #12332f 55%, #080d0c 100%);
+      background: radial-gradient(circle at 82% 18%, rgba(45, 212, 191, 0.40), transparent 58%),
+                  radial-gradient(circle at 15% 85%, rgba(16, 185, 129, 0.22), transparent 55%),
+                  linear-gradient(155deg, #072622 0%, #11524a 55%, #071311 100%);
     }}
     .poster-Mystery {{
-      background: radial-gradient(circle at 80% 15%, rgba(96, 165, 250, 0.20), transparent 55%),
-                  linear-gradient(155deg, #0f1322 0%, #1c2444 55%, #08090f 100%);
+      background: radial-gradient(circle at 82% 18%, rgba(129, 140, 248, 0.42), transparent 58%),
+                  radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.24), transparent 55%),
+                  linear-gradient(155deg, #10173d 0%, #26347a 55%, #0a0d1f 100%);
     }}
     .poster-Comedy {{
-      background: radial-gradient(circle at 80% 15%, rgba(250, 204, 21, 0.18), transparent 55%),
-                  linear-gradient(155deg, #1a170c 0%, #352c14 55%, #0b0a07 100%);
+      background: radial-gradient(circle at 82% 18%, rgba(250, 204, 21, 0.38), transparent 58%),
+                  radial-gradient(circle at 15% 85%, rgba(245, 158, 11, 0.22), transparent 55%),
+                  linear-gradient(155deg, #2b1f08 0%, #6b4b12 55%, #140e04 100%);
     }}
     .poster-card {{
       background: #111114;
@@ -73,9 +79,18 @@ def render_html(embedded_payload_json: str) -> str:
       border-color: #52525b;
       box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.85);
     }}
-    .film-grain {{
-      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+    /* Overlay grain via ::after so it never clobbers poster gradient backgrounds */
+    .film-grain::after {{
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 0);
       background-size: 16px 16px;
+    }}
+    select, select option {{
+      background-color: #18181b;
+      color: #f4f4f5;
     }}
     .no-scrollbar::-webkit-scrollbar {{
       display: none;
@@ -324,9 +339,23 @@ def render_html(embedded_payload_json: str) -> str:
       "Action": "#fb923c",
       "Drama": "#c084fc",
       "Thriller": "#2dd4bf",
-      "Mystery": "#60a5fa",
+      "Mystery": "#818cf8",
       "Comedy": "#facc15"
     }};
+
+    const GENRE_BADGE_CLASSES = {{
+      "Sci-Fi": "text-sky-300 bg-sky-500/15 border-sky-400/25",
+      "Action": "text-orange-300 bg-orange-500/15 border-orange-400/25",
+      "Drama": "text-purple-300 bg-purple-500/15 border-purple-400/25",
+      "Thriller": "text-teal-300 bg-teal-500/15 border-teal-400/25",
+      "Mystery": "text-indigo-300 bg-indigo-500/15 border-indigo-400/25",
+      "Comedy": "text-amber-300 bg-amber-500/15 border-amber-400/25"
+    }};
+
+    const IS_STATIC_HOST = Boolean(EMBEDDED_DATA) && (
+      window.location.hostname.endsWith("github.io") ||
+      window.location.protocol === "file:"
+    );
 
     const FEATURED_TAGS = [
       "space", "ai", "time", "cyberpunk", "detective", "noir",
@@ -534,21 +563,23 @@ def render_html(embedded_payload_json: str) -> str:
         return;
       }}
 
-      try {{
-        const ctrl = new AbortController();
-        const tid = setTimeout(() => ctrl.abort(), 700);
-        const res = await fetch("/api/v1/recommend", {{
-          method: "POST",
-          headers: {{ "Content-Type": "application/json" }},
-          body: JSON.stringify({{ user_id: userId, top_k: 6, exclude_watched: exclude, index_type: indexType }}),
-          signal: ctrl.signal
-        }});
-        clearTimeout(tid);
-        if (res.ok) {{
-          renderData(await res.json());
-          return;
-        }}
-      }} catch (e) {{}}
+      if (!IS_STATIC_HOST) {{
+        try {{
+          const ctrl = new AbortController();
+          const tid = setTimeout(() => ctrl.abort(), 700);
+          const res = await fetch("/api/v1/recommend", {{
+            method: "POST",
+            headers: {{ "Content-Type": "application/json" }},
+            body: JSON.stringify({{ user_id: userId, top_k: 6, exclude_watched: exclude, index_type: indexType }}),
+            signal: ctrl.signal
+          }});
+          clearTimeout(tid);
+          if (res.ok) {{
+            renderData(await res.json());
+            return;
+          }}
+        }} catch (e) {{}}
+      }}
 
       renderData(computeClientRecommendation(userId, exclude, indexType));
     }}
@@ -634,24 +665,25 @@ def render_html(embedded_payload_json: str) -> str:
       recommendationsList.innerHTML = data.recommendations.map((m, idx) => {{
         const reason = buildMatchReason(m, data.preferred_genre, data.preferred_tags);
         const logline = m.description || `Feature retrieval aligned with user latent context.`;
+        const genreBadgeCls = GENRE_BADGE_CLASSES[m.genre] || "text-zinc-300 bg-zinc-800 border-zinc-700";
         return `
           <article class="poster-card rounded-2xl overflow-hidden flex flex-col">
             <div class="poster-${{m.genre}} relative h-44 p-5 flex flex-col justify-between film-grain border-b border-zinc-800/80">
-              <div class="flex items-center justify-between">
-                <span class="font-mono text-[11px] text-zinc-200 bg-black/55 backdrop-blur-sm border border-white/10 px-2 py-0.5 rounded">
+              <div class="relative z-10 flex items-center justify-between">
+                <span class="font-mono text-[11px] text-zinc-100 bg-black/55 backdrop-blur-sm border border-white/15 px-2 py-0.5 rounded">
                   #0${{idx + 1}}
                 </span>
-                <span class="font-mono text-[11px] font-semibold text-zinc-100 bg-white/10 backdrop-blur-sm border border-white/15 px-2.5 py-0.5 rounded-full">
+                <span class="font-mono text-[11px] font-semibold text-white bg-white/15 backdrop-blur-sm border border-white/20 px-2.5 py-0.5 rounded-full">
                   ${{m.affinity_pct}}% match
                 </span>
               </div>
 
-              <div>
-                <div class="text-[11px] font-mono text-zinc-300/80 flex items-center justify-between">
+              <div class="relative z-10">
+                <div class="text-[11px] font-mono text-zinc-200/90 flex items-center justify-between">
                   <span>${{m.director || "Feature Film"}} · ${{m.year}}</span>
                   <span class="text-amber-300 font-semibold">★ ${{m.rating || "8.0"}}</span>
                 </div>
-                <h3 class="text-xl font-bold text-white tracking-tight leading-snug mt-0.5">
+                <h3 class="text-xl font-bold text-white tracking-tight leading-snug mt-0.5 drop-shadow-sm">
                   ${{m.title}}
                 </h3>
               </div>
@@ -665,7 +697,7 @@ def render_html(embedded_payload_json: str) -> str:
 
               <div class="pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-500">
                 <span class="truncate">${{m.tags.slice(0, 3).join(" · ")}}</span>
-                <span class="text-zinc-400 shrink-0 ml-2">${{m.genre}}</span>
+                <span class="${{genreBadgeCls}} border px-2 py-0.5 rounded-full text-[10px] shrink-0 ml-2">${{m.genre}}</span>
               </div>
             </div>
           </article>
@@ -719,6 +751,7 @@ def render_html(embedded_payload_json: str) -> str:
         ctx.stroke();
       }});
 
+      const placedLabels = [];
       latentItems.forEach(item => {{
         const rank = currentRecRanks[item.id];
         if (!rank) return;
@@ -727,13 +760,23 @@ def render_html(embedded_payload_json: str) -> str:
         ctx.fillStyle = "#fafafa";
         ctx.fill();
         ctx.lineWidth = 2;
-        ctx.strokeStyle = "#52525b";
+        ctx.strokeStyle = GENRE_COLORS[item.genre] || "#52525b";
         ctx.stroke();
+
+        // Offset label vertically if another rank label is close nearby
+        let labelY = item._py - 11;
+        for (const pt of placedLabels) {{
+          if (Math.abs(pt.x - item._px) < 18 && Math.abs(pt.y - labelY) < 12) {{
+            labelY = item._py + 16;
+            break;
+          }}
+        }}
+        placedLabels.push({{ x: item._px, y: labelY }});
 
         ctx.fillStyle = "#fafafa";
         ctx.font = "600 9px JetBrains Mono, monospace";
         ctx.textAlign = "center";
-        ctx.fillText("#" + rank, item._px, item._py - 10);
+        ctx.fillText("#" + rank, item._px, labelY);
       }});
     }}
 
