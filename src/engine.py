@@ -13,12 +13,15 @@ from src.data_loader import (
     generate_user_data,
     load_catalog,
 )
-from src.model import TORCH_AVAILABLE, TwoTowerNumPyEngine, TwoTowerRecSys
+from src.model import TORCH_AVAILABLE, TwoTowerNumPyEngine
 from src.metrics import evaluate_ranking_strategy
 from src.vector_index import BaseVectorIndex, create_vector_index, project_embeddings_2d
 
 if TORCH_AVAILABLE:
     import torch
+    from src.model import TwoTowerRecSys
+else:
+    TwoTowerRecSys = None
 
 
 class RecommendationEngine:

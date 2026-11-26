@@ -166,6 +166,11 @@ if TORCH_AVAILABLE:
             loss_i2u = F.cross_entropy(similarity_matrix.T, labels)
             return 0.5 * (loss_u2i + loss_i2u)
 
+else:
+    UserTower = None
+    ItemTower = None
+    TwoTowerRecSys = None
+
 
 class TwoTowerNumPyEngine:
     """
