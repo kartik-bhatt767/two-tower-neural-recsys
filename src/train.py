@@ -1,66 +1,99 @@
 # src/train.py
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import json
-import torch
-import torch.optim as optim
+
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
+import torch.optim as optim
 
+from src.data_loader import (
+    GENRES,
+    build_catalog_tag_matrix,
+    build_tag_vocabulary,
+    encode_tags_multihot,
+    generate_user_data,
+    load_catalog,
+)
 from src.model import TwoTowerRecSys
-from src.data_loader import generate_user_data, GENRES
 
-def train_two_tower_model(epochs: int = 15, batch_size: int = 16, lr: float = 0.003):
+
+def train_two_tower_model(
+    epochs: int = 30,
+    batch_size: int = 32,
+    lr: float = 0.004,
+    num_users: int = 150,
+    embed_dim: int = 32,
+    temperature: float = 0.07,
+):
+    torch.manual_seed(42)
+    np.random.seed(42)
+
     catalog_path = os.path.join(os.path.dirname(__file__), "..", "data", "catalog.json")
-    with open(catalog_path, "r", encoding="utf-8") as f:
-        catalog = json.load(f)
+    catalog = load_catalog(catalog_path)
+    tag_vocab = build_tag_vocabulary(catalog)
+    item_tag_matrix = build_catalog_tag_matrix(catalog, tag_vocab)
 
-    users, interactions = generate_user_data(num_users=50, catalog_path=catalog_path)
+    users, train_interactions = generate_user_data(
+        num_users=num_users,
+        catalog_path=catalog_path,
+        holdout_ratio=0.25,
+        seed=42,
+    )
+
     item_genres = [GENRES.index(item["genre"]) if item["genre"] in GENRES else 0 for item in catalog]
+    user_tag_matrix = np.vstack(
+        [encode_tags_multihot(u.get("preferred_tags", []), tag_vocab) for u in users]
+    )
 
-    num_users = len(users)
     num_items = len(catalog)
     num_genres = len(GENRES)
+    num_tags = len(tag_vocab)
 
-    print("=" * 60)
-    print("🔥 TRAINING PYTORCH TWO-TOWER NEURAL RECOMMENDATION SYSTEM")
-    print("=" * 60)
-    print(f"Users: {num_users} | Items: {num_items} | Total Interactions: {len(interactions)}")
+    print("=" * 64)
+    print("TRAINING PYTORCH TWO-TOWER NEURAL RECOMMENDATION SYSTEM")
+    print("=" * 64)
+    print(
+        f"Users: {num_users} | Catalog Items: {num_items} | "
+        f"Tag Vocab: {num_tags} | Train Interactions: {len(train_interactions)}"
+    )
 
     model = TwoTowerRecSys(
         num_users=num_users,
         num_items=num_items,
         num_genres=num_genres,
-        embed_dim=32,
-        temperature=0.07
+        num_tags=num_tags,
+        embed_dim=embed_dim,
+        temperature=temperature,
     )
 
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
     loss_history = []
 
-    # Prepare training tensors
-    u_ids = []
-    u_genres = []
-    i_ids = []
-    i_genres = []
+    u_ids = torch.tensor([u_idx for u_idx, _ in train_interactions], dtype=torch.long)
+    u_genres = torch.tensor(
+        [users[u_idx]["preferred_genre_idx"] for u_idx, _ in train_interactions], dtype=torch.long
+    )
+    u_tags = torch.tensor(
+        np.vstack([user_tag_matrix[u_idx] for u_idx, _ in train_interactions]), dtype=torch.float32
+    )
 
-    for u_idx, item_idx in interactions:
-        u_ids.append(u_idx)
-        u_genres.append(users[u_idx]["preferred_genre_idx"])
-        i_ids.append(item_idx)
-        i_genres.append(item_genres[item_idx])
+    i_ids = torch.tensor([i_idx for _, i_idx in train_interactions], dtype=torch.long)
+    i_genres = torch.tensor([item_genres[i_idx] for _, i_idx in train_interactions], dtype=torch.long)
+    i_tags = torch.tensor(
+        np.vstack([item_tag_matrix[i_idx] for _, i_idx in train_interactions]), dtype=torch.float32
+    )
 
-    u_ids = torch.tensor(u_ids, dtype=torch.long)
-    u_genres = torch.tensor(u_genres, dtype=torch.long)
-    i_ids = torch.tensor(i_ids, dtype=torch.long)
-    i_genres = torch.tensor(i_genres, dtype=torch.long)
-
-    dataset_size = len(interactions)
+    dataset_size = len(train_interactions)
     indices = np.arange(dataset_size)
 
+    model.train()
     for epoch in range(1, epochs + 1):
         np.random.shuffle(indices)
         epoch_losses = []
@@ -70,36 +103,48 @@ def train_two_tower_model(epochs: int = 15, batch_size: int = 16, lr: float = 0.
             if len(batch_idx) < 4:
                 continue
 
-            b_u = u_ids[batch_idx]
-            b_ug = u_genres[batch_idx]
-            b_i = i_ids[batch_idx]
-            b_ig = i_genres[batch_idx]
-
             optimizer.zero_grad()
-            sim_matrix = model(b_u, b_ug, b_i, b_ig)
+            sim_matrix = model(
+                u_ids[batch_idx],
+                u_genres[batch_idx],
+                i_ids[batch_idx],
+                i_genres[batch_idx],
+                u_tags[batch_idx],
+                i_tags[batch_idx],
+            )
             loss = model.compute_loss(sim_matrix)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
-
             epoch_losses.append(loss.item())
 
-        avg_loss = np.mean(epoch_losses)
+        scheduler.step()
+        avg_loss = float(np.mean(epoch_losses))
         loss_history.append(avg_loss)
-        if epoch % 3 == 0 or epoch == 1:
-            print(f"Epoch [{epoch:02d}/{epochs:02d}] — In-Batch Contrastive Loss: {avg_loss:.4f}")
+        if epoch % 5 == 0 or epoch == 1 or epoch == epochs:
+            print(f"Epoch [{epoch:02d}/{epochs:02d}] — Contrastive Loss: {avg_loss:.4f}")
 
-    # Save Model Weights
     models_dir = os.path.join(os.path.dirname(__file__), "..", "models")
     os.makedirs(models_dir, exist_ok=True)
     weights_path = os.path.join(models_dir, "two_tower_weights.pt")
-    torch.save(model.state_dict(), weights_path)
-    print(f"✅ Model weights saved to {weights_path}")
+    checkpoint = {
+        "state_dict": model.state_dict(),
+        "num_users": num_users,
+        "num_items": num_items,
+        "num_genres": num_genres,
+        "num_tags": num_tags,
+        "embed_dim": embed_dim,
+        "temperature": temperature,
+        "tag_vocab": tag_vocab,
+        "genres": GENRES,
+    }
+    torch.save(checkpoint, weights_path)
+    print(f"Saved model checkpoint to {weights_path}")
 
-    # Plot Loss Curve
     _plot_loss_curve(loss_history)
-    print("=" * 60)
+    print("=" * 64)
     return model, loss_history
+
 
 def _plot_loss_curve(loss_history):
     assets_dir = os.path.join(os.path.dirname(__file__), "..", "assets")
@@ -110,8 +155,22 @@ def _plot_loss_curve(loss_history):
     fig.patch.set_facecolor("#05070e")
     ax.set_facecolor("#0f172a")
 
-    ax.plot(range(1, len(loss_history) + 1), loss_history, color="#f43f5e", linewidth=2.5, marker="o", markersize=4, label="In-Batch Contrastive Loss (τ=0.07)")
-    ax.set_title("Two-Tower Neural Network — Training Loss Curve", color="#f8fafc", fontsize=12, fontweight="bold", pad=12)
+    ax.plot(
+        range(1, len(loss_history) + 1),
+        loss_history,
+        color="#f43f5e",
+        linewidth=2.5,
+        marker="o",
+        markersize=3.5,
+        label="Symmetric InfoNCE Loss (tau=0.07)",
+    )
+    ax.set_title(
+        "Two-Tower Neural Network — Training Loss Curve",
+        color="#f8fafc",
+        fontsize=12,
+        fontweight="bold",
+        pad=12,
+    )
     ax.set_xlabel("Epoch", color="#94a3b8", fontsize=10)
     ax.set_ylabel("Cross-Entropy Loss", color="#94a3b8", fontsize=10)
     ax.tick_params(colors="#cbd5e1")
@@ -121,7 +180,8 @@ def _plot_loss_curve(loss_history):
     plt.tight_layout()
     plt.savefig(out_path, facecolor=fig.get_facecolor(), edgecolor="none")
     plt.close()
-    print(f"✅ Training loss plot saved to {out_path}")
+    print(f"Training loss plot saved to {out_path}")
+
 
 if __name__ == "__main__":
-    train_two_tower_model(epochs=15, batch_size=16, lr=0.003)
+    train_two_tower_model()
