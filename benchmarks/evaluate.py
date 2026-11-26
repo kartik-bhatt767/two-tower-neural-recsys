@@ -42,15 +42,30 @@ def run_benchmark(k: int = 10) -> Dict[str, Any]:
         history = set(user.get("history_item_ids", []))
         return [iid for iid in pop_ranked_ids if iid not in history][:top_k]
 
-    def make_ann_ranker(index_type: str):
+    def make_ann_ranker(index_type: str, use_stage2: bool = False):
         vec_index = engine.indexes[index_type]
 
         def _ranker(user: Dict[str, Any], top_k: int) -> List[int]:
             history = set(user.get("history_item_ids", []))
             u_vec = engine._encode_online_user(user)
-            fetch_k = min(len(all_item_ids), top_k + len(history) + 5)
+            stage1_pool = max(22, top_k * 3) if use_stage2 else top_k
+            fetch_k = min(len(all_item_ids), stage1_pool + len(history) + 5)
             raw = vec_index.search(u_vec, top_k=fetch_k)
-            return [iid for iid, _ in raw if iid not in history][:top_k]
+            filtered = [(engine.item_id_map[iid], sc) for iid, sc in raw if iid not in history]
+            if not use_stage2:
+                return [m["id"] for m, _ in filtered[:top_k]]
+
+            hist_movies = [engine.item_id_map[mid] for mid in history if mid in engine.item_id_map]
+            reranked = engine.reranker.rerank(
+                user=user,
+                candidates=filtered,
+                item_embeddings=engine.item_embeddings,
+                id_to_pos=engine.id_to_pos,
+                top_k=top_k,
+                diversity_lambda=0.92,
+                history_movies=hist_movies,
+            )
+            return [m["id"] for m, _, _ in reranked]
 
         return _ranker
 
@@ -60,27 +75,32 @@ def run_benchmark(k: int = 10) -> Dict[str, Any]:
         (
             f"Two-Tower ({engine.indexes['ivf'].backend_name.upper()})",
             engine.indexes["ivf"].backend_name,
-            make_ann_ranker("ivf"),
+            make_ann_ranker("ivf", use_stage2=False),
         ),
         (
             f"Two-Tower ({engine.indexes['hnsw'].backend_name.upper()})",
             engine.indexes["hnsw"].backend_name,
-            make_ann_ranker("hnsw"),
+            make_ann_ranker("hnsw", use_stage2=False),
         ),
         (
             f"Two-Tower ({engine.indexes['flat'].backend_name.upper()})",
             engine.indexes["flat"].backend_name,
-            make_ann_ranker("flat"),
+            make_ann_ranker("flat", use_stage2=False),
+        ),
+        (
+            "Two-Stage (HNSW + Re-Ranker)",
+            "two_stage_hnsw_rerank",
+            make_ann_ranker("hnsw", use_stage2=True),
         ),
     ]
 
     results: List[Dict[str, Any]] = []
-    print("=" * 84)
+    print("=" * 88)
     print(f"OFFLINE HOLDOUT EVALUATION BENCHMARK (K={k}, Mode={engine.inference_mode})")
     print(f"Catalog Size: {len(all_item_ids)} items | Users: {len(engine.users)} | Strict Zero-Leakage Holdout")
-    print("=" * 84)
+    print("=" * 88)
     print(f"{'Model / Retriever':<32} | {'Hit@5':<7} | {'Hit@10':<7} | {'NDCG@10':<7} | {'MRR@10':<7} | {'P95 (ms)':<8}")
-    print("-" * 84)
+    print("-" * 88)
 
     for display_name, backend_key, rank_fn in models:
         metrics = evaluate_ranking_strategy(engine.users, rank_fn, k=k)
@@ -96,7 +116,7 @@ def run_benchmark(k: int = 10) -> Dict[str, Any]:
             f"{metrics['P95_Latency_ms']:<8.4f}"
         )
 
-    print("=" * 84)
+    print("=" * 88)
 
     out_json = os.path.join(root_dir, "benchmarks", "results.json")
     os.makedirs(os.path.dirname(out_json), exist_ok=True)
@@ -117,7 +137,7 @@ def run_benchmark(k: int = 10) -> Dict[str, Any]:
 
 def _plot_benchmark_chart(results: List[Dict[str, Any]], k: int, out_path: str) -> None:
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    labels = [r["model"].replace("Two-Tower ", "TT ") for r in results]
+    labels = [r["model"].replace("Two-Tower ", "TT ").replace("Two-Stage ", "2-Stage ") for r in results]
     ndcg = [r[f"NDCG@{k}"] for r in results]
     hit_k = [r[f"HitRate@{k}"] for r in results]
     mrr_k = [r[f"MRR@{k}"] for r in results]
@@ -125,13 +145,13 @@ def _plot_benchmark_chart(results: List[Dict[str, Any]], k: int, out_path: str) 
     x = np.arange(len(labels))
     width = 0.25
 
-    fig, ax = plt.subplots(figsize=(10.5, 5.2), dpi=150)
-    fig.patch.set_facecolor("#05070e")
-    ax.set_facecolor("#0f172a")
+    fig, ax = plt.subplots(figsize=(11.5, 5.4), dpi=150)
+    fig.patch.set_facecolor("#09090b")
+    ax.set_facecolor("#111114")
 
-    b1 = ax.bar(x - width, hit_k, width, label=f"HitRate@{k}", color="#f43f5e", alpha=0.92)
-    b2 = ax.bar(x, ndcg, width, label=f"NDCG@{k}", color="#6366f1", alpha=0.92)
-    b3 = ax.bar(x + width, mrr_k, width, label=f"MRR@{k}", color="#10b981", alpha=0.92)
+    b1 = ax.bar(x - width, hit_k, width, label=f"HitRate@{k}", color="#38bdf8", alpha=0.92)
+    b2 = ax.bar(x, ndcg, width, label=f"NDCG@{k}", color="#818cf8", alpha=0.92)
+    b3 = ax.bar(x + width, mrr_k, width, label=f"MRR@{k}", color="#34d399", alpha=0.92)
 
     for bars in (b1, b2, b3):
         for bar in bars:
@@ -144,23 +164,23 @@ def _plot_benchmark_chart(results: List[Dict[str, Any]], k: int, out_path: str) 
                 ha="center",
                 va="bottom",
                 fontsize=7.5,
-                color="#e2e8f0",
+                color="#e4e4e7",
             )
 
     ax.set_title(
-        f"Offline Holdout Benchmark: Two-Tower + FAISS vs. Baselines (Top-{k})",
-        color="#f8fafc",
+        f"Offline Holdout Benchmark: Two-Stage Pipeline & FAISS vs. Baselines (Top-{k})",
+        color="#fafafa",
         fontsize=12,
         fontweight="bold",
         pad=14,
     )
-    ax.set_ylabel("Score (Higher is Better)", color="#94a3b8", fontsize=10)
+    ax.set_ylabel("Score (Higher is Better)", color="#a1a1aa", fontsize=10)
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, color="#e2e8f0", fontsize=8.5, rotation=10)
-    ax.set_ylim(0, 1.12)
-    ax.tick_params(colors="#cbd5e1")
-    ax.grid(axis="y", color="#334155", linestyle="--", alpha=0.5)
-    ax.legend(facecolor="#1e293b", edgecolor="none", labelcolor="white", loc="upper left")
+    ax.set_xticklabels(labels, color="#e4e4e7", fontsize=8.2, rotation=10)
+    ax.set_ylim(0, 1.14)
+    ax.tick_params(colors="#a1a1aa")
+    ax.grid(axis="y", color="#27272a", linestyle="--", alpha=0.7)
+    ax.legend(facecolor="#18181b", edgecolor="#27272a", labelcolor="#fafafa", loc="upper left")
 
     plt.tight_layout()
     plt.savefig(out_path, facecolor=fig.get_facecolor(), edgecolor="none")

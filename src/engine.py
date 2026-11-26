@@ -13,9 +13,14 @@ from src.data_loader import (
     generate_user_data,
     load_catalog,
 )
-from src.model import TORCH_AVAILABLE, TwoTowerNumPyEngine
 from src.metrics import evaluate_ranking_strategy
-from src.vector_index import BaseVectorIndex, create_vector_index, project_embeddings_2d
+from src.model import TORCH_AVAILABLE, TwoTowerNumPyEngine
+from src.reranker import Stage2CrossFeatureReranker
+from src.vector_index import (
+    BaseVectorIndex,
+    create_vector_index,
+    project_embeddings_2d_with_basis,
+)
 
 if TORCH_AVAILABLE:
     import torch
@@ -26,9 +31,9 @@ else:
 
 class RecommendationEngine:
     """
-    Production Two-Tower Neural Candidate Retrieval Engine backed by FAISS Vector Indexing.
-    Supports trained PyTorch dual-tower inference, cold-start metadata encoding,
-    Exact FlatIP / HNSW / IVF-Flat ANN search, and leak-free holdout evaluation.
+    Production Two-Stage Neural Candidate Retrieval & Re-Ranking Engine backed by FAISS.
+    Stage 1: Decoupled User/Item Dual Towers + FAISS HNSW/IVF-Flat/FlatIP MIPS search.
+    Stage 2: Cross-Feature Fine Re-Ranker + Maximal Marginal Relevance (MMR) diversity.
     """
 
     def __init__(
@@ -62,6 +67,7 @@ class RecommendationEngine:
         self.item_embeddings: Optional[np.ndarray] = None
 
         self.indexes: Dict[str, BaseVectorIndex] = {}
+        self.reranker = Stage2CrossFeatureReranker()
         self.default_index_type: str = "hnsw"
         self.inference_mode: str = "numpy_fallback"
 
@@ -87,7 +93,6 @@ class RecommendationEngine:
         if not loaded_torch:
             self._initialize_numpy_engine()
 
-        # Build Exact FlatIP, HNSW graph ANN, and Voronoi IVF-Flat vector indexes
         item_ids = [item["id"] for item in self.catalog]
         for idx_name in ("flat", "hnsw", "ivf"):
             vec_index = create_vector_index(idx_name, embed_dim=self.embed_dim)
@@ -185,9 +190,13 @@ class RecommendationEngine:
         return self.indexes[key]
 
     @staticmethod
-    def _format_candidate(movie: Dict[str, Any], score: float) -> Dict[str, Any]:
-        # Calibrate cosine dot-product [-1, 1] into intuitive match percentage [0, 99]
-        affinity_pct = int(min(99, max(5, round((float(score) + 1.0) * 50.0))))
+    def _format_candidate(
+        movie: Dict[str, Any],
+        stage1_score: float,
+        stage2_score: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        blended = stage2_score if stage2_score is not None else (stage1_score + 1.0) * 0.5
+        affinity_pct = int(min(99, max(5, round(float(blended) * 100.0))))
         return {
             "id": movie["id"],
             "title": movie["title"],
@@ -197,7 +206,8 @@ class RecommendationEngine:
             "director": movie.get("director", "Unknown"),
             "tags": movie["tags"],
             "description": movie.get("description", ""),
-            "similarity_score": round(float(score), 4),
+            "similarity_score": round(float(stage1_score), 4),
+            "stage2_score": round(float(blended), 4),
             "affinity_pct": affinity_pct,
         }
 
@@ -207,35 +217,56 @@ class RecommendationEngine:
         top_k: int = 6,
         exclude_watched: bool = True,
         index_type: str = "hnsw",
+        use_stage2: bool = True,
+        diversity_lambda: float = 0.88,
     ) -> Dict[str, Any]:
         t0 = time.perf_counter()
         user = self.users[user_idx % len(self.users)]
         watched_set = set(user["history_item_ids"])
         vec_index = self._resolve_index(index_type)
+        history_movies = [
+            self.item_id_map[m_id] for m_id in user["history_item_ids"] if m_id in self.item_id_map
+        ]
 
         t_u0 = time.perf_counter()
         u_vec = self._encode_online_user(user)
         user_tower_ms = (time.perf_counter() - t_u0) * 1000.0
 
-        # Retrieve extra headroom from ANN index to accommodate watched filtering
-        fetch_k = min(len(self.catalog), top_k + (len(watched_set) if exclude_watched else 0) + 5)
+        stage1_pool = max(22, top_k * 3) if use_stage2 else top_k
+        fetch_k = min(len(self.catalog), stage1_pool + (len(watched_set) if exclude_watched else 0) + 5)
+
         t_ann0 = time.perf_counter()
         ranked_candidates = vec_index.search(u_vec, top_k=fetch_k)
         ann_search_ms = (time.perf_counter() - t_ann0) * 1000.0
 
         t_f0 = time.perf_counter()
-        recommendations = []
+        stage1_filtered: List[Tuple[Dict[str, Any], float]] = []
         for item_id, score in ranked_candidates:
             if exclude_watched and item_id in watched_set:
                 continue
-            movie = self.item_id_map[item_id]
-            recommendations.append(self._format_candidate(movie, score))
-            if len(recommendations) >= top_k:
+            stage1_filtered.append((self.item_id_map[item_id], score))
+            if not use_stage2 and len(stage1_filtered) >= top_k:
                 break
         filter_ms = (time.perf_counter() - t_f0) * 1000.0
 
+        stage2_rerank_ms = 0.0
+        if use_stage2:
+            t_r0 = time.perf_counter()
+            reranked = self.reranker.rerank(
+                user=user,
+                candidates=stage1_filtered,
+                item_embeddings=self.item_embeddings,
+                id_to_pos=self.id_to_pos,
+                top_k=top_k,
+                diversity_lambda=diversity_lambda,
+                history_movies=history_movies,
+            )
+            stage2_rerank_ms = (time.perf_counter() - t_r0) * 1000.0
+            recommendations = [self._format_candidate(m, s1, s2) for m, s1, s2 in reranked]
+        else:
+            recommendations = [self._format_candidate(m, s1) for m, s1 in stage1_filtered[:top_k]]
+
         total_ms = (time.perf_counter() - t0) * 1000.0
-        history_movies = [self.item_id_map[m_id] for m_id in user["history_item_ids"] if m_id in self.item_id_map]
 
         return {
             "user_id": user["user_id"],
@@ -244,6 +275,8 @@ class RecommendationEngine:
             "preferred_tags": user.get("preferred_tags", []),
             "inference_mode": self.inference_mode,
             "index_backend": vec_index.backend_name,
+            "stage2_enabled": use_stage2,
+            "diversity_lambda": diversity_lambda,
             "watch_history": history_movies,
             "recommendations": recommendations,
             "latency_ms": round(total_ms, 3),
@@ -251,8 +284,34 @@ class RecommendationEngine:
                 "user_tower_ms": round(user_tower_ms, 3),
                 "ann_search_ms": round(ann_search_ms, 3),
                 "filter_ms": round(filter_ms, 3),
+                "stage2_rerank_ms": round(stage2_rerank_ms, 3),
                 "total_ms": round(total_ms, 3),
             },
+        }
+
+    def recommend_similar_items(self, item_id: int, top_k: int = 5) -> Dict[str, Any]:
+        """Retrieve nearest item neighbors (Item-to-Item MIPS via FAISS FlatIP)."""
+        if item_id not in self.id_to_pos:
+            raise ValueError(f"Item ID {item_id} not found in catalog.")
+
+        t0 = time.perf_counter()
+        pos = self.id_to_pos[item_id]
+        source_item = self.catalog[pos]
+        item_vec = self.item_embeddings[pos]
+
+        raw = self.indexes["flat"].search(item_vec, top_k=min(len(self.catalog), top_k + 1))
+        similar = []
+        for cand_id, score in raw:
+            if cand_id == item_id:
+                continue
+            similar.append(self._format_candidate(self.item_id_map[cand_id], score))
+            if len(similar) >= top_k:
+                break
+
+        return {
+            "source_item": source_item,
+            "similar_items": similar,
+            "latency_ms": round((time.perf_counter() - t0) * 1000.0, 3),
         }
 
     def recommend_cold_start(
@@ -274,7 +333,6 @@ class RecommendationEngine:
                 t_tensor = torch.tensor(tag_vec.reshape(1, -1), dtype=torch.float32)
                 query_vec = self.torch_model.user_tower.encode_cold_user(g_tensor, t_tensor).cpu().numpy()[0]
         else:
-            # Blend centroids of matching genre users & tag affinities
             matching_users = [u["user_id"] for u in self.users if u["preferred_genre_idx"] == genre_idx]
             base_vec = (
                 np.mean(self.user_embeddings[matching_users], axis=0)
@@ -306,7 +364,7 @@ class RecommendationEngine:
         }
 
     def match_cold_start_item(
-        self, title: str, genre: str, tags: List[str], top_k: int = 5
+        self, title: str, genre: str, tags: List[str], top_k: int = 6
     ) -> Dict[str, Any]:
         """Project a brand-new unseen catalog item from metadata and retrieve nearest items."""
         t0 = time.perf_counter()
@@ -336,13 +394,14 @@ class RecommendationEngine:
             "title": title,
             "genre": genre,
             "tags": tags,
+            "embedding": [round(float(x), 4) for x in item_vec],
             "similar_catalog_items": similar_items,
             "latency_ms": round((time.perf_counter() - t0) * 1000.0, 3),
         }
 
     def get_latent_space_map(self) -> Dict[str, Any]:
-        """Project catalog item embeddings into 2D PCA coordinates for cluster visualization."""
-        coords = project_embeddings_2d(self.item_embeddings)
+        """Project catalog item embeddings into 2D PCA coordinates + export SVD basis."""
+        coords, mean_vec, basis, scale = project_embeddings_2d_with_basis(self.item_embeddings)
         points = []
         for idx, item in enumerate(self.catalog):
             points.append(
@@ -356,23 +415,51 @@ class RecommendationEngine:
                     "y": round(float(coords[idx, 1]), 4),
                 }
             )
-        return {"genres": GENRES, "total_items": len(points), "items": points}
+        return {
+            "genres": GENRES,
+            "total_items": len(points),
+            "items": points,
+            "pca_projection": {
+                "mean": [round(float(x), 5) for x in mean_vec],
+                "components": [[round(float(v), 5) for v in row] for row in basis],
+                "scale": round(float(scale), 5),
+            },
+        }
 
-    def evaluate_metrics(self, k: int = 10, index_type: str = "flat") -> Dict[str, Any]:
-        """
-        Strict leak-free evaluation on unseen `holdout_item_ids`.
-        Training `history_item_ids` are masked out prior to Top-K cutoff ranking.
-        """
+    def evaluate_metrics(
+        self,
+        k: int = 10,
+        index_type: str = "flat",
+        use_stage2: bool = False,
+        diversity_lambda: float = 0.88,
+    ) -> Dict[str, Any]:
+        """Strict leak-free evaluation on unseen `holdout_item_ids`."""
         vec_index = self._resolve_index(index_type)
 
         def _ranker(user: Dict[str, Any], top_k: int) -> List[int]:
             history = set(user.get("history_item_ids", []))
             u_vec = self._encode_online_user(user)
-            fetch_k = min(len(self.catalog), top_k + len(history) + 5)
+            stage1_pool = max(22, top_k * 3) if use_stage2 else top_k
+            fetch_k = min(len(self.catalog), stage1_pool + len(history) + 5)
             raw = vec_index.search(u_vec, top_k=fetch_k)
-            return [item_id for item_id, _ in raw if item_id not in history][:top_k]
+            filtered = [(self.item_id_map[iid], sc) for iid, sc in raw if iid not in history]
+            if not use_stage2:
+                return [m["id"] for m, _ in filtered[:top_k]]
+
+            hist_movies = [self.item_id_map[mid] for mid in history if mid in self.item_id_map]
+            reranked = self.reranker.rerank(
+                user=user,
+                candidates=filtered,
+                item_embeddings=self.item_embeddings,
+                id_to_pos=self.id_to_pos,
+                top_k=top_k,
+                diversity_lambda=diversity_lambda,
+                history_movies=hist_movies,
+            )
+            return [m["id"] for m, _, _ in reranked]
 
         metrics = evaluate_ranking_strategy(self.users, _ranker, k=k)
         metrics["index_backend"] = vec_index.backend_name
         metrics["inference_mode"] = self.inference_mode
+        metrics["stage2_enabled"] = use_stage2
         return metrics

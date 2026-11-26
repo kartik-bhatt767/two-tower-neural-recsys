@@ -90,6 +90,11 @@ def train_two_tower_model(
         np.vstack([item_tag_matrix[i_idx] for _, i_idx in train_interactions]), dtype=torch.float32
     )
 
+    # Item sampling log-probabilities for LogQ popularity debiasing inside InfoNCE
+    item_counts = np.bincount([i_idx for _, i_idx in train_interactions], minlength=num_items).astype(np.float32)
+    item_probs = np.maximum(item_counts, 1.0) / max(1.0, float(np.sum(item_counts)))
+    all_item_log_q = torch.tensor(np.log(item_probs), dtype=torch.float32)
+
     dataset_size = len(train_interactions)
     indices = np.arange(dataset_size)
 
@@ -112,7 +117,8 @@ def train_two_tower_model(
                 u_tags[batch_idx],
                 i_tags[batch_idx],
             )
-            loss = model.compute_loss(sim_matrix)
+            batch_log_q = all_item_log_q[i_ids[batch_idx]]
+            loss = model.compute_loss(sim_matrix, item_log_probs=batch_log_q)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()

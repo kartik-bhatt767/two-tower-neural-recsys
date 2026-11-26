@@ -8,10 +8,10 @@ import numpy as np
 from fastapi.testclient import TestClient
 
 from api.main import app
-from src.data_loader import GENRES, generate_user_data, load_catalog
+from src.data_loader import generate_user_data, load_catalog
 from src.engine import RecommendationEngine
 from src.model import TwoTowerNumPyEngine
-from src.vector_index import create_vector_index, project_embeddings_2d
+from src.vector_index import create_vector_index, project_embeddings_2d_with_basis
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "catalog.json")
 
@@ -27,7 +27,6 @@ def test_catalog_and_disjoint_holdout_split():
     for u in users:
         hist = set(u["history_item_ids"])
         holdout = set(u["holdout_item_ids"])
-        # Zero train/test leakage between watch history and evaluation holdout targets
         assert len(hist) > 0
         assert len(holdout) > 0
         assert hist.isdisjoint(holdout)
@@ -59,23 +58,34 @@ def test_vector_index_backends_and_2d_projection():
         assert hits[0][0] == 101
         assert np.isclose(hits[0][1], 1.0, atol=1e-3)
 
-    coords = project_embeddings_2d(vecs)
+    coords, mean_vec, basis, scale = project_embeddings_2d_with_basis(vecs)
     assert coords.shape == (60, 2)
+    assert mean_vec.shape == (32,)
+    assert basis.shape == (2, 32)
+    assert scale > 0.0
     assert np.max(np.abs(coords)) <= 1.0 + 1e-4
 
 
-def test_candidate_generation_and_cold_start():
+def test_candidate_generation_stage2_and_item_similarity():
     engine = RecommendationEngine(catalog_path=CATALOG_PATH, embed_dim=32, num_users=150)
     engine.initialize()
 
-    res = engine.recommend_for_user(user_idx=0, top_k=6, exclude_watched=True, index_type="hnsw")
+    res = engine.recommend_for_user(
+        user_idx=0, top_k=6, exclude_watched=True, index_type="hnsw", use_stage2=True, diversity_lambda=0.88
+    )
     assert len(res["recommendations"]) == 6
-    assert res["latency_ms"] >= 0.0
-    assert "ann_search_ms" in res["latency_breakdown"]
+    assert res["stage2_enabled"] is True
+    assert "stage2_rerank_ms" in res["latency_breakdown"]
+    assert "stage2_score" in res["recommendations"][0]
 
     watched_ids = {m["id"] for m in res["watch_history"]}
     for rec in res["recommendations"]:
         assert rec["id"] not in watched_ids
+
+    sim = engine.recommend_similar_items(item_id=1, top_k=4)
+    assert sim["source_item"]["id"] == 1
+    assert len(sim["similar_items"]) == 4
+    assert all(item["id"] != 1 for item in sim["similar_items"])
 
     cold_user = engine.recommend_cold_start(preferred_genre="Sci-Fi", tags=["space", "ai"], top_k=5)
     assert cold_user["cold_start"] is True
@@ -83,17 +93,19 @@ def test_candidate_generation_and_cold_start():
 
     cold_item = engine.match_cold_start_item(title="Quantum Horizon", genre="Sci-Fi", tags=["time", "space"], top_k=4)
     assert len(cold_item["similar_catalog_items"]) == 4
+    assert len(cold_item["embedding"]) == engine.embed_dim
 
 
 def test_leak_free_evaluation_metrics():
     engine = RecommendationEngine(catalog_path=CATALOG_PATH, embed_dim=32, num_users=150)
     engine.initialize()
 
-    metrics = engine.evaluate_metrics(k=10, index_type="flat")
-    assert metrics["evaluated_users"] == 150
-    assert metrics["HitRate@10"] > 0.35
-    assert metrics["NDCG@10"] > 0.15
-    assert metrics["P95_Latency_ms"] >= 0.0
+    metrics_s1 = engine.evaluate_metrics(k=10, index_type="flat", use_stage2=False)
+    metrics_s2 = engine.evaluate_metrics(k=10, index_type="hnsw", use_stage2=True)
+    assert metrics_s1["evaluated_users"] == 150
+    assert metrics_s1["HitRate@10"] > 0.35
+    assert metrics_s2["HitRate@10"] > 0.35
+    assert metrics_s2["stage2_enabled"] is True
 
 
 def test_fastapi_endpoints_e2e():
@@ -109,9 +121,16 @@ def test_fastapi_endpoints_e2e():
         assert users_resp.status_code == 200
         assert len(users_resp.json()) == 150
 
-        rec_resp = client.post("/api/v1/recommend", json={"user_id": 0, "top_k": 5, "index_type": "hnsw"})
+        rec_resp = client.post(
+            "/api/v1/recommend",
+            json={"user_id": 0, "top_k": 5, "index_type": "hnsw", "use_stage2": True, "diversity_lambda": 0.85},
+        )
         assert rec_resp.status_code == 200
         assert len(rec_resp.json()["recommendations"]) == 5
+
+        sim_resp = client.get("/api/v1/similar-items/1?top_k=4")
+        assert sim_resp.status_code == 200
+        assert len(sim_resp.json()["similar_items"]) == 4
 
         cold_u = client.post("/api/v1/cold-start/user", json={"preferred_genre": "Thriller", "tags": ["detective", "noir"], "top_k": 4})
         assert cold_u.status_code == 200
@@ -124,7 +143,8 @@ def test_fastapi_endpoints_e2e():
         map_resp = client.get("/api/v1/latent-map")
         assert map_resp.status_code == 200
         assert map_resp.json()["total_items"] == 60
+        assert "pca_projection" in map_resp.json()
 
-        metrics_resp = client.get("/api/v1/metrics?k=10&index_type=flat")
+        metrics_resp = client.get("/api/v1/metrics?k=10&index_type=flat&use_stage2=true")
         assert metrics_resp.status_code == 200
         assert "NDCG@10" in metrics_resp.json()

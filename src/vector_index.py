@@ -248,15 +248,24 @@ def create_vector_index(index_type: str, embed_dim: int) -> BaseVectorIndex:
     raise ValueError(f"Unsupported vector index type: {index_type}")
 
 
-def project_embeddings_2d(embeddings: np.ndarray) -> np.ndarray:
-    """Compute centered, [-1, 1] scaled 2D PCA coordinates using SVD."""
+def project_embeddings_2d_with_basis(embeddings: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    """Compute centered [-0.88, 0.88] 2D PCA coordinates plus SVD projection basis for new query vectors."""
     vecs = np.asarray(embeddings, dtype=np.float32)
     if len(vecs) < 2:
-        return np.zeros((len(vecs), 2), dtype=np.float32)
-    centered = vecs - np.mean(vecs, axis=0, keepdims=True)
+        dim = vecs.shape[1] if vecs.ndim == 2 else 1
+        return np.zeros((len(vecs), 2), dtype=np.float32), np.zeros(dim, dtype=np.float32), np.zeros((2, dim), dtype=np.float32), 1.0
+    mean_vec = np.mean(vecs, axis=0, keepdims=False)
+    centered = vecs - mean_vec
     _, _, vt = np.linalg.svd(centered, full_matrices=False)
-    coords = centered @ vt[:2].T
-    max_abs = np.max(np.abs(coords))
-    if max_abs > 1e-8:
-        coords = (coords / max_abs) * 0.88
+    basis = vt[:2]
+    coords = centered @ basis.T
+    max_abs = float(np.max(np.abs(coords)))
+    scale = 0.88 / max_abs if max_abs > 1e-8 else 1.0
+    coords = coords * scale
+    return coords.astype(np.float32), mean_vec.astype(np.float32), basis.astype(np.float32), scale
+
+
+def project_embeddings_2d(embeddings: np.ndarray) -> np.ndarray:
+    """Compute centered, [-1, 1] scaled 2D PCA coordinates using SVD."""
+    coords, _, _, _ = project_embeddings_2d_with_basis(embeddings)
     return coords

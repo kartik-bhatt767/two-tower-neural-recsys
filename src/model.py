@@ -158,11 +158,23 @@ if TORCH_AVAILABLE:
             v_emb = self.item_tower(item_ids, item_genres, item_tags)
             return torch.matmul(u_emb, v_emb.T) / self.temperature
 
-        def compute_loss(self, similarity_matrix: torch.Tensor) -> torch.Tensor:
+        def compute_loss(
+            self,
+            similarity_matrix: torch.Tensor,
+            item_log_probs: Optional[torch.Tensor] = None,
+        ) -> torch.Tensor:
+            """
+            Symmetric InfoNCE loss with optional LogQ sampling-bias correction
+            (subtracting log candidate sampling probability before cross-entropy).
+            """
             batch_size = similarity_matrix.size(0)
             labels = torch.arange(batch_size, device=similarity_matrix.device)
-            # Symmetric contrastive loss (user->item + item->user) stabilizes tower alignment
-            loss_u2i = F.cross_entropy(similarity_matrix, labels)
+
+            logits_u2i = similarity_matrix
+            if item_log_probs is not None:
+                logits_u2i = similarity_matrix - item_log_probs.view(1, -1)
+
+            loss_u2i = F.cross_entropy(logits_u2i, labels)
             loss_i2u = F.cross_entropy(similarity_matrix.T, labels)
             return 0.5 * (loss_u2i + loss_i2u)
 

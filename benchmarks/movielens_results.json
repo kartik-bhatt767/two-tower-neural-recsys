@@ -1,0 +1,57 @@
+{
+  "dataset": "MovieLens-100K (GroupLens)",
+  "split": "Chronological Leave-Last-2-Out (positive ratings >= 4)",
+  "num_users": 934,
+  "num_items": 1682,
+  "train_interactions": 53473,
+  "results": [
+    {
+      "evaluated_users": 934,
+      "HitRate@5": 0.0064,
+      "HitRate@10": 0.0171,
+      "Recall@10": 0.0086,
+      "NDCG@5": 0.0028,
+      "NDCG@10": 0.0049,
+      "MRR@10": 0.0054,
+      "P50_Latency_ms": 0.1955,
+      "P95_Latency_ms": 0.233,
+      "model": "Random Baseline"
+    },
+    {
+      "evaluated_users": 934,
+      "HitRate@5": 0.0857,
+      "HitRate@10": 0.1413,
+      "Recall@10": 0.076,
+      "NDCG@5": 0.0352,
+      "NDCG@10": 0.047,
+      "MRR@10": 0.0514,
+      "P50_Latency_ms": 0.0459,
+      "P95_Latency_ms": 0.0926,
+      "model": "Global Popularity"
+    },
+    {
+      "evaluated_users": 934,
+      "HitRate@5": 0.1306,
+      "HitRate@10": 0.2088,
+      "Recall@10": 0.1167,
+      "NDCG@5": 0.0504,
+      "NDCG@10": 0.0695,
+      "MRR@10": 0.073,
+      "P50_Latency_ms": 0.051,
+      "P95_Latency_ms": 0.1432,
+      "model": "Two-Tower (FAISS_HNSW)"
+    },
+    {
+      "evaluated_users": 934,
+      "HitRate@5": 0.1306,
+      "HitRate@10": 0.2077,
+      "Recall@10": 0.1156,
+      "NDCG@5": 0.0501,
+      "NDCG@10": 0.0688,
+      "MRR@10": 0.0723,
+      "P50_Latency_ms": 0.0853,
+      "P95_Latency_ms": 0.2534,
+      "model": "Two-Tower (FAISS_FLAT)"
+    }
+  ]
+}

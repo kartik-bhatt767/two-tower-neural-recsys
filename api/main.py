@@ -27,14 +27,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Two-Tower Neural Recommendation Microservice",
     description=(
-        "High-Throughput Deep Learning Candidate Retrieval Architecture backed by "
-        "FAISS Vector Indexing for sub-millisecond personalized recommendations."
+        "High-Throughput Two-Stage Deep Learning Candidate Retrieval & Cross-Feature Re-Ranking "
+        "backed by FAISS Vector Indexing for sub-millisecond personalized recommendations."
     ),
-    version="2.0.0",
+    version="2.1.0",
     lifespan=lifespan,
 )
 
-# Ensure engine is ready even when imported directly by ASGI test clients without lifespan
 rec_engine.initialize()
 
 if os.path.exists(STATIC_DIR):
@@ -43,9 +42,11 @@ if os.path.exists(STATIC_DIR):
 
 class RecommendRequest(BaseModel):
     user_id: int = Field(default=0, ge=0, description="User index to recommend for")
-    top_k: int = Field(default=6, ge=1, le=30, description="Number of candidates to retrieve")
+    top_k: int = Field(default=6, ge=1, le=30, description="Number of candidates to return")
     exclude_watched: bool = Field(default=True, description="Filter out previously watched items")
     index_type: str = Field(default="hnsw", description="Vector index backend: hnsw, flat, or ivf")
+    use_stage2: bool = Field(default=True, description="Enable Stage-2 Cross-Feature + MMR re-ranking")
+    diversity_lambda: float = Field(default=0.88, ge=0.0, le=1.0, description="MMR relevance vs diversity tradeoff")
 
 
 class ColdStartUserRequest(BaseModel):
@@ -59,7 +60,7 @@ class ColdStartItemRequest(BaseModel):
     title: str = Field(..., min_length=1, description="Title of the unseen cold-start item")
     genre: str = Field(default="Sci-Fi", description=f"Primary genre from {GENRES}")
     tags: List[str] = Field(default_factory=lambda: ["cyberpunk", "ai", "simulation"])
-    top_k: int = Field(default=5, ge=1, le=20)
+    top_k: int = Field(default=6, ge=1, le=20)
 
 
 @app.get("/", include_in_schema=False)
@@ -105,9 +106,19 @@ def get_recommendations(req: RecommendRequest) -> Dict[str, Any]:
             top_k=req.top_k,
             exclude_watched=req.exclude_watched,
             index_type=req.index_type,
+            use_stage2=req.use_stage2,
+            diversity_lambda=req.diversity_lambda,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/similar-items/{item_id}", tags=["Recommendation Engine"])
+def get_similar_items(item_id: int, top_k: int = Query(default=5, ge=1, le=20)) -> Dict[str, Any]:
+    try:
+        return rec_engine.recommend_similar_items(item_id=item_id, top_k=top_k)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.post("/api/v1/cold-start/user", tags=["Cold-Start Inference"])
@@ -142,9 +153,10 @@ def get_latent_map() -> Dict[str, Any]:
 def get_evaluation_metrics(
     k: int = Query(default=10, ge=1, le=30),
     index_type: str = Query(default="flat"),
+    use_stage2: bool = Query(default=True),
 ) -> Dict[str, Any]:
     try:
-        return rec_engine.evaluate_metrics(k=k, index_type=index_type)
+        return rec_engine.evaluate_metrics(k=k, index_type=index_type, use_stage2=use_stage2)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

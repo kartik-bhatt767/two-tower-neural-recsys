@@ -9,21 +9,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      color-scheme: dark;
-    }
+    :root { color-scheme: dark; }
     body {
       background-color: #09090b;
       color: #fafafa;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
-    .font-editorial {
-      font-family: 'Instrument Serif', Georgia, serif;
-    }
-    .font-mono {
-      font-family: 'JetBrains Mono', monospace;
-    }
-    /* Rich art-directed cinema poster gradients by genre */
+    .font-editorial { font-family: 'Instrument Serif', Georgia, serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
     .poster-Sci-Fi {
       background: radial-gradient(circle at 82% 18%, rgba(56, 189, 248, 0.42), transparent 58%),
                   radial-gradient(circle at 15% 85%, rgba(99, 102, 241, 0.28), transparent 55%),
@@ -64,7 +57,6 @@
       border-color: #52525b;
       box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.85);
     }
-    /* Overlay grain via ::after so it never clobbers poster gradient backgrounds */
     .film-grain::after {
       content: "";
       position: absolute;
@@ -77,28 +69,22 @@
       background-color: #18181b;
       color: #f4f4f5;
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-zinc-200 selection:text-zinc-950">
 
   <!-- Minimal Floating Navigation Header -->
-  <header class="sticky top-0 z-30 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl">
-    <div class="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
-      <!-- Brand -->
+  <header class="sticky top-0 z-30 border-b border-zinc-800/80 bg-zinc-950/85 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-3">
       <div class="flex items-center gap-3 min-w-0">
         <div class="w-8 h-8 rounded-md bg-zinc-100 text-zinc-950 flex items-center justify-center font-bold text-xs tracking-tighter shrink-0">
           TT
         </div>
         <div class="flex items-center gap-2.5 truncate">
           <span class="font-semibold tracking-tight text-zinc-100 text-sm sm:text-base">Two-Tower Cinema</span>
-          <span id="navLatencyPill" class="hidden md:inline-flex items-center gap-1.5 text-[11px] font-mono text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full">
+          <span id="navLatencyPill" class="hidden lg:inline-flex items-center gap-1.5 text-[11px] font-mono text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             <span id="navBackendLabel">FAISS HNSW</span>
             <span>·</span>
@@ -107,22 +93,16 @@
         </div>
       </div>
 
-      <!-- Mode Switcher & Actions -->
-      <div class="flex items-center gap-2 sm:gap-2.5">
-        <!-- Segmented Mode Pill -->
+      <div class="flex items-center gap-2">
         <div class="inline-flex items-center bg-zinc-900 border border-zinc-800 rounded-full p-0.5 text-xs font-medium">
-          <button id="tabExisting" class="px-3 py-1 rounded-full bg-zinc-100 text-zinc-950 font-semibold transition">
-            For You
-          </button>
-          <button id="tabColdStart" class="px-3 py-1 rounded-full text-zinc-400 hover:text-zinc-200 transition">
-            Cold-Start
-          </button>
+          <button id="tabExisting" class="px-3 py-1 rounded-full bg-zinc-100 text-zinc-950 font-semibold transition">For You</button>
+          <button id="tabColdUser" class="px-3 py-1 rounded-full text-zinc-400 hover:text-zinc-200 transition">Cold User</button>
+          <button id="tabColdItem" class="px-3 py-1 rounded-full text-zinc-400 hover:text-zinc-200 transition">Unseen Film</button>
         </div>
 
-        <!-- Model Internals Slide-Over Trigger -->
         <button id="openDrawerBtn" class="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-200 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-3.5 py-1.5 rounded-full transition">
           <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>Model Internals</span>
+          <span class="hidden sm:inline">Model Internals</span>
         </button>
 
         <a href="https://github.com/kartik-bhatt767/two-tower-neural-recsys" target="_blank" aria-label="GitHub Repository" class="p-2 rounded-full text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 transition">
@@ -132,11 +112,10 @@
     </div>
   </header>
 
-  <!-- Main Editorial Canvas -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-5 sm:px-8 pt-10 pb-20 space-y-8">
+  <main class="flex-1 max-w-6xl w-full mx-auto px-5 sm:px-8 pt-9 pb-20 space-y-8">
 
-    <!-- Editorial Title + Control Row -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-zinc-800/80">
+    <!-- Editorial Title + Controls Row -->
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-zinc-800/80">
       <div class="space-y-1.5">
         <div id="heroEyebrow" class="text-xs font-mono uppercase tracking-widest text-zinc-400">
           Sci-Fi Affinity · Space, Time &amp; AI Subspace
@@ -146,29 +125,36 @@
         </h1>
       </div>
 
-      <!-- Compact Existing User Controls -->
-      <div id="existingControls" class="flex flex-wrap items-center gap-2.5">
-        <select id="userSelect" aria-label="Select Viewer Profile" class="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-100 text-xs font-medium rounded-full px-4 py-2 focus:outline-none focus:border-zinc-500 transition"></select>
+      <!-- Existing User Controls -->
+      <div id="existingControls" class="flex flex-wrap items-center gap-2">
+        <select id="userSelect" aria-label="Select Viewer Profile" class="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-100 text-xs font-medium rounded-full px-3.5 py-2 focus:outline-none focus:border-zinc-500 transition"></select>
 
-        <select id="indexSelect" aria-label="Vector Index Backend" class="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 text-xs font-mono rounded-full px-3.5 py-2 focus:outline-none focus:border-zinc-500 transition">
+        <select id="indexSelect" aria-label="Vector Index Backend" class="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 text-xs font-mono rounded-full px-3 py-2 focus:outline-none focus:border-zinc-500 transition">
           <option value="hnsw">FAISS HNSW</option>
           <option value="flat">FAISS FlatIP</option>
           <option value="ivf">FAISS IVF-Flat</option>
         </select>
 
-        <label class="inline-flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-full px-3.5 py-2 text-xs text-zinc-300 cursor-pointer select-none hover:border-zinc-700 transition">
+        <select id="diversitySelect" aria-label="Stage-2 MMR Diversity" class="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 text-xs font-mono rounded-full px-3 py-2 focus:outline-none focus:border-zinc-500 transition">
+          <option value="0.88">Stage-2 + MMR (0.88)</option>
+          <option value="0.65">Stage-2 Diverse (0.65)</option>
+          <option value="1.00">Stage-2 Pure (1.00)</option>
+          <option value="off">Stage-1 Raw Only</option>
+        </select>
+
+        <label class="inline-flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 rounded-full px-3 py-2 text-xs text-zinc-300 cursor-pointer select-none hover:border-zinc-700 transition">
           <input type="checkbox" id="excludeWatched" checked class="accent-zinc-100 rounded" />
           <span>Hide Watched</span>
         </label>
 
-        <button id="exportBtn" title="Export Recommendation Payload" class="inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-mono rounded-full px-3.5 py-2 transition">
+        <button id="exportBtn" title="Export Recommendation Payload" class="inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-mono rounded-full px-3 py-2 transition">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span>JSON</span>
         </button>
       </div>
 
-      <!-- Compact Cold-Start Composer -->
-      <div id="coldStartControls" class="hidden flex flex-col items-start md:items-end gap-2.5">
+      <!-- Cold-Start User Composer -->
+      <div id="coldUserControls" class="hidden flex flex-col items-start lg:items-end gap-2.5">
         <div class="flex flex-wrap items-center gap-2">
           <span class="text-xs text-zinc-400">Genre Prior:</span>
           <select id="coldGenreSelect" class="bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs font-medium rounded-full px-3.5 py-1.5 focus:outline-none">
@@ -185,29 +171,53 @@
             <option value="ivf">FAISS IVF-Flat</option>
           </select>
         </div>
-        <div id="tagChipsContainer" class="flex flex-wrap md:justify-end gap-1.5"></div>
+        <div id="tagChipsUserContainer" class="flex flex-wrap lg:justify-end gap-1.5"></div>
+      </div>
+
+      <!-- Cold-Start Item Composer -->
+      <div id="coldItemControls" class="hidden flex flex-col items-start lg:items-end gap-2.5">
+        <div class="flex flex-wrap items-center gap-2">
+          <input id="coldItemTitleInput" type="text" value="Quantum Drift" placeholder="New unseen film title..." class="bg-zinc-900 border border-zinc-800 focus:border-zinc-500 text-zinc-100 text-xs rounded-full px-3.5 py-1.5 w-44 focus:outline-none" />
+          <select id="coldItemGenreSelect" class="bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs font-medium rounded-full px-3.5 py-1.5 focus:outline-none">
+            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Action">Action</option>
+            <option value="Drama">Drama</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Comedy">Comedy</option>
+          </select>
+          <button id="projectColdItemBtn" class="bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold rounded-full px-4 py-1.5 transition">
+            Project Film
+          </button>
+        </div>
+        <div id="tagChipsItemContainer" class="flex flex-wrap lg:justify-end gap-1.5"></div>
       </div>
     </div>
 
     <!-- Horizontal "Because You Watched" History Rail -->
     <section id="historySection" class="space-y-3">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xs font-mono uppercase tracking-wider text-zinc-500">
-          Because you watched <span class="text-zinc-400">(Training History Signals)</span>
-        </h2>
-        <span id="historyCountLabel" class="text-xs font-mono text-zinc-600">6 titles</span>
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <h2 class="text-xs font-mono uppercase tracking-wider text-zinc-500">
+            Because you watched <span class="text-zinc-400">(Click `+ Watch` below to shift recommendations live)</span>
+          </h2>
+          <button id="resetSimWatchBtn" class="hidden text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-400/25 px-2.5 py-0.5 rounded-full hover:bg-amber-500/20 transition">
+            Reset Simulated Watches
+          </button>
+        </div>
+        <span id="historyCountLabel" class="text-xs font-mono text-zinc-600 shrink-0">5 titles</span>
       </div>
       <div id="historyList" class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1"></div>
     </section>
 
     <!-- Main Editorial Poster Grid -->
     <section class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xs font-mono uppercase tracking-wider text-zinc-500">
-          Top-6 Candidate Selection <span class="text-zinc-400">(60-Film Catalog · L2 Cosine Ranking)</span>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="gridHeading" class="text-xs font-mono uppercase tracking-wider text-zinc-500">
+          Top-6 Candidate Selection <span class="text-zinc-400">(Click any card for Item-to-Item similarity)</span>
         </h2>
         <button id="openDrawerLink" class="text-xs font-medium text-zinc-400 hover:text-zinc-100 transition">
-          Inspect 2D Embedding Space &amp; Benchmarks →
+          Inspect User Vector on 2D Space &amp; Benchmarks →
         </button>
       </div>
 
@@ -216,9 +226,8 @@
 
   </main>
 
-  <!-- Minimalist Footer -->
   <footer class="border-t border-zinc-900 py-6 px-6 text-center text-xs text-zinc-500">
-    Two-Tower Deep Learning Candidate Retrieval · 60 Curated Titles · Holdout Hit@10 <span id="footerHit10" class="text-zinc-300 font-mono">98.0%</span> · Built by <a href="https://github.com/kartik-bhatt767" target="_blank" class="text-zinc-300 hover:text-white underline underline-offset-4">Kartik Bhatt</a>
+    Two-Stage Neural RecSys · LogQ InfoNCE + FAISS HNSW/FlatIP + Stage-2 MMR · Holdout Hit@10 <span id="footerHit10" class="text-zinc-300 font-mono">98.0%</span> · Built by <a href="https://github.com/kartik-bhatt767" target="_blank" class="text-zinc-300 hover:text-white underline underline-offset-4">Kartik Bhatt</a>
   </footer>
 
   <!-- Slide-Over "Model Internals" Drawer -->
@@ -228,16 +237,16 @@
       <div class="flex items-center justify-between pb-4 border-b border-zinc-800">
         <div>
           <h3 class="text-base font-semibold text-zinc-100">Model Internals &amp; Telemetry</h3>
-          <p class="text-xs font-mono text-zinc-400 mt-0.5">PyTorch Dual Towers · Symmetric InfoNCE · FAISS</p>
+          <p class="text-xs font-mono text-zinc-400 mt-0.5">Two-Stage Retrieval · LogQ InfoNCE · FAISS</p>
         </div>
         <button id="closeDrawerBtn" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition" aria-label="Close Drawer">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
-      <!-- Offline Holdout Metrics -->
+      <!-- Offline Holdout Benchmarks -->
       <div class="space-y-2.5">
-        <div class="text-xs font-mono uppercase tracking-wider text-zinc-500">Zero-Leakage Holdout Benchmarks (150 Users)</div>
+        <div class="text-xs font-mono uppercase tracking-wider text-zinc-500">Zero-Leakage Benchmarks (Catalog 60 + MovieLens-100K)</div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3">
             <div class="text-[11px] font-mono text-zinc-500">Hit@10</div>
@@ -256,26 +265,30 @@
             <div id="kpiMrr10" class="text-base font-bold text-zinc-100 font-mono mt-0.5">0.512</div>
           </div>
         </div>
+        <div id="ml100kBanner" class="hidden bg-zinc-900/60 border border-zinc-800 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs font-mono">
+          <span class="text-zinc-400">MovieLens-100K (Real Ratings)</span>
+          <span id="ml100kStats" class="text-sky-300">Hit@10: — · NDCG@10: —</span>
+        </div>
       </div>
 
       <!-- Stage Latency Breakdown -->
       <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 space-y-3">
         <div class="flex items-center justify-between text-xs font-mono">
-          <span class="uppercase tracking-wider text-zinc-500">Active Request Breakdown</span>
+          <span class="uppercase tracking-wider text-zinc-500">Two-Stage Request Breakdown</span>
           <span id="drawerIndexLabel" class="text-zinc-300">faiss_hnsw</span>
         </div>
         <div class="space-y-2 text-xs font-mono">
           <div>
             <div class="flex justify-between text-zinc-400 mb-1"><span>User Tower Forward</span><span id="barUserMs" class="text-zinc-200">0.19 ms</span></div>
-            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden"><div id="barUserFill" class="h-full bg-zinc-200 rounded-full" style="width: 50%"></div></div>
+            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden"><div id="barUserFill" class="h-full bg-zinc-200 rounded-full" style="width: 45%"></div></div>
           </div>
           <div>
-            <div class="flex justify-between text-zinc-400 mb-1"><span>FAISS Vector Search</span><span id="barAnnMs" class="text-emerald-400">0.05 ms</span></div>
-            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden"><div id="barAnnFill" class="h-full bg-emerald-400 rounded-full" style="width: 28%"></div></div>
+            <div class="flex justify-between text-zinc-400 mb-1"><span>Stage-1 FAISS ANN</span><span id="barAnnMs" class="text-emerald-400">0.05 ms</span></div>
+            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden"><div id="barAnnFill" class="h-full bg-emerald-400 rounded-full" style="width: 25%"></div></div>
           </div>
           <div>
-            <div class="flex justify-between text-zinc-400 mb-1"><span>History Masking &amp; Sort</span><span id="barFilterMs" class="text-zinc-300">0.03 ms</span></div>
-            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden"><div id="barFilterFill" class="h-full bg-zinc-500 rounded-full" style="width: 15%"></div></div>
+            <div class="flex justify-between text-zinc-400 mb-1"><span>Stage-2 Re-Rank + MMR</span><span id="barRerankMs" class="text-sky-300">0.04 ms</span></div>
+            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden"><div id="barRerankFill" class="h-full bg-sky-400 rounded-full" style="width: 20%"></div></div>
           </div>
         </div>
       </div>
@@ -283,41 +296,67 @@
       <!-- Interactive 2D PCA Latent Space -->
       <div class="space-y-2.5">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-mono uppercase tracking-wider text-zinc-500">2D PCA Item Latent Space (60 Titles)</span>
-          <span class="text-[11px] font-mono text-zinc-500">Hover points</span>
+          <span class="text-xs font-mono uppercase tracking-wider text-zinc-500">2D PCA Latent Map (User Vector + Top-6)</span>
+          <span class="text-[11px] font-mono text-zinc-500">Click any dot</span>
         </div>
         <div class="relative bg-zinc-900/70 border border-zinc-800 rounded-xl overflow-hidden">
-          <canvas id="latentCanvas" width="420" height="280" class="w-full h-auto block cursor-crosshair"></canvas>
-          <div id="canvasTooltip" class="hidden absolute pointer-events-none bg-zinc-950/95 border border-zinc-700 text-xs rounded-lg px-2.5 py-1.5 shadow-xl z-20 max-w-[200px]">
+          <canvas id="latentCanvas" width="420" height="280" class="w-full h-auto block cursor-pointer"></canvas>
+          <div id="canvasTooltip" class="hidden absolute pointer-events-none bg-zinc-950/95 border border-zinc-700 text-xs rounded-lg px-2.5 py-1.5 shadow-xl z-20 max-w-[210px]">
             <div id="ttTitle" class="font-semibold text-white truncate"></div>
             <div id="ttMeta" class="text-[11px] font-mono text-zinc-400"></div>
           </div>
         </div>
         <div class="grid grid-cols-3 gap-1.5 text-[11px] font-mono text-zinc-400 pt-1">
+          <div class="flex items-center gap-1.5"><span class="text-amber-300 font-bold">★</span><span>Query Vector</span></div>
           <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-zinc-100 ring-2 ring-zinc-400"></span><span>Top-6 Matches</span></div>
           <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span><span>Watched</span></div>
           <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-sky-400"></span><span>Sci-Fi</span></div>
           <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-400"></span><span>Action</span></div>
-          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-400"></span><span>Drama</span></div>
-          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-teal-400"></span><span>Thriller / Mys / Com</span></div>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-400"></span><span>Drama / Others</span></div>
         </div>
       </div>
 
-      <!-- Architecture Equations -->
-      <div class="border-t border-zinc-800 pt-5 space-y-3 text-xs text-zinc-400 leading-relaxed">
-        <div class="text-xs font-mono uppercase tracking-wider text-zinc-500">Mathematical Architecture</div>
-        <p>
-          User Tower <code class="text-zinc-200 font-mono">f(x_u)</code> and Item Tower <code class="text-zinc-200 font-mono">g(x_i)</code> project IDs, genres, and 48-tag multi-hot vectors onto a shared L2-normalized 32D hypersphere. Cosine similarity equals inner product <code class="text-zinc-200 font-mono">&lang;u, v&rang;</code>.
-        </p>
+      <div class="border-t border-zinc-800 pt-5 space-y-2.5 text-xs text-zinc-400 leading-relaxed">
+        <div class="text-xs font-mono uppercase tracking-wider text-zinc-500">Two-Stage Mathematical Pipeline</div>
+        <p>Stage 1 scores L2-normalized towers via FAISS <code class="text-zinc-200 font-mono">&lang;u, v&rang;</code>; Stage 2 fuses cosine dot products, tag Jaccard overlap, genre bonus, and MMR diversity.</p>
         <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-3 font-mono text-[11px] text-zinc-300">
-          L = 0.5 · [ CE(U·Vᵀ / τ, I) + CE(V·Uᵀ / τ, I) ], τ = 0.07
+          MMR(i) = λ·S₂(u, i) - (1-λ)·max_&lbrace;j∈S&rbrace;&lang;vᵢ, vⱼ&rang;
         </div>
       </div>
     </aside>
   </div>
 
+  <!-- Item Detail & "More Like This" Modal -->
+  <div id="itemModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div id="itemModalBackdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+    <div class="relative z-10 w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl max-h-[88vh] overflow-y-auto">
+      <div id="itemModalBanner" class="poster-Sci-Fi film-grain relative p-6 sm:p-7 border-b border-zinc-800 flex items-end justify-between min-h-[160px]">
+        <div class="relative z-10 space-y-1.5 pr-6">
+          <div id="imMeta" class="text-xs font-mono text-zinc-200/90">Christopher Nolan · 2014 · ★ 8.7</div>
+          <h2 id="imTitle" class="font-editorial text-3xl sm:text-4xl text-white leading-tight">Interstellar</h2>
+        </div>
+        <button id="closeItemModalBtn" class="relative z-10 self-start p-1.5 rounded-full bg-black/50 text-zinc-200 hover:text-white border border-white/15">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <p id="imDesc" class="text-sm text-zinc-300 leading-relaxed"></p>
+        <div id="imTags" class="flex flex-wrap gap-1.5"></div>
+
+        <div class="pt-4 border-t border-zinc-800/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-mono uppercase tracking-wider text-zinc-400">More Like This (Item-to-Item FAISS Cosine MIPS)</h3>
+            <span id="imSimLatency" class="text-[11px] font-mono text-emerald-400">0.08 ms</span>
+          </div>
+          <div id="imSimilarGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const EMBEDDED_DATA = {"catalog": [{"id": 1, "title": "Interstellar", "genre": "Sci-Fi", "year": 2014, "rating": 8.7, "director": "Christopher Nolan", "tags": ["space", "relativity", "wormhole", "time", "survival"], "description": "Explorers travel through a wormhole in space to ensure humanity's survival beyond a dying Earth."}, {"id": 2, "title": "Inception", "genre": "Sci-Fi", "year": 2010, "rating": 8.8, "director": "Christopher Nolan", "tags": ["dreams", "subconscious", "heist", "mind-bending", "time"], "description": "A skilled extractor enters layered dream architectures to plant an idea inside a CEO's subconscious."}, {"id": 3, "title": "The Matrix", "genre": "Sci-Fi", "year": 1999, "rating": 8.7, "director": "Lana & Lilly Wachowski", "tags": ["cyberpunk", "simulation", "ai", "dystopia", "martial-arts"], "description": "A hacker discovers reality is a simulated construct managed by sentient machines."}, {"id": 4, "title": "Ex Machina", "genre": "Sci-Fi", "year": 2014, "rating": 7.7, "director": "Alex Garland", "tags": ["turing-test", "ai", "robotics", "ethics", "psychological"], "description": "A programmer evaluates the human-like consciousness of an advanced humanoid AI in isolation."}, {"id": 5, "title": "Blade Runner 2049", "genre": "Sci-Fi", "year": 2017, "rating": 8.0, "director": "Denis Villeneuve", "tags": ["cyberpunk", "replicant", "detective", "neon", "dystopia"], "description": "A bioengineered officer uncovers a buried secret capable of destabilizing society."}, {"id": 6, "title": "The Dark Knight", "genre": "Action", "year": 2008, "rating": 9.0, "director": "Christopher Nolan", "tags": ["batman", "joker", "vigilante", "chaos", "crime"], "description": "Gotham's vigilante confronts an agent of anarchy pushing the city's moral fabric to collapse."}, {"id": 7, "title": "Gladiator", "genre": "Action", "year": 2000, "rating": 8.5, "director": "Ridley Scott", "tags": ["rome", "warrior", "empire", "revenge", "arena"], "description": "A betrayed Roman general fights through the arena to avenge his family against a corrupt emperor."}, {"id": 8, "title": "Mad Max: Fury Road", "genre": "Action", "year": 2015, "rating": 8.1, "director": "George Miller", "tags": ["wasteland", "chase", "post-apocalyptic", "survival", "vehicular"], "description": "Across a desert wasteland, rebels flee a warlord in a relentless high-speed armored convoy chase."}, {"id": 9, "title": "John Wick", "genre": "Action", "year": 2014, "rating": 7.4, "director": "Chad Stahelski", "tags": ["assassin", "underworld", "martial-arts", "vengeance", "noir"], "description": "A retired hitman returns to a secretive assassin underworld seeking ruthless retribution."}, {"id": 10, "title": "Top Gun: Maverick", "genre": "Action", "year": 2022, "rating": 8.2, "director": "Joseph Kosinski", "tags": ["aviation", "pilot", "dogfight", "navy", "mission"], "description": "A veteran aviator trains elite graduates for an unprecedented high-G strike mission."}, {"id": 11, "title": "The Social Network", "genre": "Drama", "year": 2010, "rating": 7.8, "director": "David Fincher", "tags": ["facebook", "startup", "algorithm", "silicon-valley", "betrayal"], "description": "The rise of a dorm-room social platform sparks fierce legal battles among its co-founders."}, {"id": 12, "title": "Oppenheimer", "genre": "Drama", "year": 2023, "rating": 8.3, "director": "Christopher Nolan", "tags": ["physics", "atomic-bomb", "history", "quantum", "biography"], "description": "A theoretical physicist leads the Manhattan Project while facing political fallout in the atomic age."}, {"id": 13, "title": "Whiplash", "genre": "Drama", "year": 2014, "rating": 8.5, "director": "Damien Chazelle", "tags": ["jazz", "perfectionism", "drummer", "obsession", "mentor"], "description": "An ambitious conservatory drummer endures psychological pressure under an obsessive conductor."}, {"id": 14, "title": "Fight Club", "genre": "Drama", "year": 1999, "rating": 8.8, "director": "David Fincher", "tags": ["consumerism", "insomnia", "psychological", "anarchy", "twist"], "description": "An insomniac office worker forms an underground combat movement that spirals out of control."}, {"id": 15, "title": "Parasite", "genre": "Thriller", "year": 2019, "rating": 8.5, "director": "Bong Joon-ho", "tags": ["class-divide", "dark-comedy", "deception", "suspense", "family"], "description": "A struggling family infiltrates a wealthy household through calculated social engineering."}, {"id": 16, "title": "Se7en", "genre": "Thriller", "year": 1995, "rating": 8.6, "director": "David Fincher", "tags": ["detective", "serial-killer", "noir", "mystery", "crime"], "description": "Two homicide detectives hunt a methodical killer orchestrating murders around the seven deadly sins."}, {"id": 17, "title": "Shutter Island", "genre": "Thriller", "year": 2010, "rating": 8.2, "director": "Martin Scorsese", "tags": ["asylum", "twist", "psychological", "investigation", "detective"], "description": "A U.S. Marshal investigates a disappearance at a remote psychiatric fortress while questioning reality."}, {"id": 18, "title": "Zodiac", "genre": "Thriller", "year": 2007, "rating": 7.7, "director": "David Fincher", "tags": ["journalism", "unsolved", "code-breaking", "cryptogram", "crime"], "description": "Cartoonists and detectives become consumed by tracking a killer taunting newspapers with ciphers."}, {"id": 19, "title": "Knives Out", "genre": "Mystery", "year": 2019, "rating": 7.9, "director": "Rian Johnson", "tags": ["whodunnit", "inheritance", "detective", "mansion", "twist"], "description": "An eccentric private detective investigates the suspicious death of a wealthy crime novelist."}, {"id": 20, "title": "Superbad", "genre": "Comedy", "year": 2007, "rating": 7.6, "director": "Greg Mottola", "tags": ["high-school", "friendship", "party", "coming-of-age", "banter"], "description": "Two co-dependent seniors navigate chaotic misadventures on their last night before graduation."}, {"id": 21, "title": "Arrival", "genre": "Sci-Fi", "year": 2016, "rating": 7.9, "director": "Denis Villeneuve", "tags": ["linguistics", "aliens", "time", "communication", "mind-bending"], "description": "A linguist deciphers an alien visual language that alters her perception of linear time."}, {"id": 22, "title": "Dune: Part Two", "genre": "Sci-Fi", "year": 2024, "rating": 8.5, "director": "Denis Villeneuve", "tags": ["space", "empire", "desert", "prophecy", "warfare"], "description": "Paul Atreides unites with desert warriors to wage war against the conspirators who destroyed his house."}, {"id": 23, "title": "The Martian", "genre": "Sci-Fi", "year": 2015, "rating": 8.0, "director": "Ridley Scott", "tags": ["space", "survival", "engineering", "nasa", "physics"], "description": "A stranded botanist uses engineering ingenuity on Mars to survive until a rescue mission arrives."}, {"id": 24, "title": "Her", "genre": "Sci-Fi", "year": 2013, "rating": 8.0, "director": "Spike Jonze", "tags": ["ai", "ethics", "loneliness", "future", "psychology"], "description": "A quiet writer develops an emotional bond with an adaptive, self-evolving operating system."}, {"id": 25, "title": "Edge of Tomorrow", "genre": "Sci-Fi", "year": 2014, "rating": 7.9, "director": "Doug Liman", "tags": ["time", "loop", "aliens", "combat", "survival"], "description": "A soldier relives the same alien invasion battle repeatedly, refining combat skills each loop."}, {"id": 26, "title": "Spider-Man: Into the Spider-Verse", "genre": "Action", "year": 2018, "rating": 8.4, "director": "Bob Persichetti", "tags": ["multiverse", "vigilante", "neon", "animation", "teamwork"], "description": "Teenager Miles Morales teams up with alternate-dimension heroes to halt a collider threat."}, {"id": 27, "title": "Mission: Impossible \u2014 Fallout", "genre": "Action", "year": 2018, "rating": 7.7, "director": "Christopher McQuarrie", "tags": ["espionage", "chase", "stunts", "heist", "mission"], "description": "IMF agents race to recover stolen plutonium cores before an extremist syndicate detonates them."}, {"id": 28, "title": "The Bourne Ultimatum", "genre": "Action", "year": 2007, "rating": 8.0, "director": "Paul Greengrass", "tags": ["espionage", "assassin", "chase", "conspiracy", "memory"], "description": "A former black-ops operative uncovers the origins of his training while evading intelligence agencies."}, {"id": 29, "title": "Casino Royale", "genre": "Action", "year": 2006, "rating": 8.0, "director": "Martin Campbell", "tags": ["espionage", "poker", "heist", "agent", "vengeance"], "description": "After earning double-O status, James Bond enters a high-stakes poker game to bankrupt a financier."}, {"id": 30, "title": "Everything Everywhere All at Once", "genre": "Action", "year": 2022, "rating": 7.8, "director": "Daniel Kwan", "tags": ["multiverse", "martial-arts", "family", "mind-bending", "absurdist"], "description": "A laundromat owner channels skills across parallel universes to save existence from fracturing."}, {"id": 31, "title": "The Shawshank Redemption", "genre": "Drama", "year": 1994, "rating": 9.3, "director": "Frank Darabont", "tags": ["prison", "hope", "friendship", "redemption", "escape"], "description": "A wrongly convicted banker builds resilience and quiet escape plans over two decades in prison."}, {"id": 32, "title": "Good Will Hunting", "genre": "Drama", "year": 1997, "rating": 8.3, "director": "Gus Van Sant", "tags": ["mathematics", "mentor", "psychology", "genius", "friendship"], "description": "A self-taught janitor with mathematical brilliance confronts past trauma alongside an empathetic therapist."}, {"id": 33, "title": "The Godfather", "genre": "Drama", "year": 1972, "rating": 9.2, "director": "Francis Ford Coppola", "tags": ["mafia", "family", "empire", "betrayal", "crime"], "description": "An aging patriarch transfers control of his clandestine empire to his reluctant youngest son."}, {"id": 34, "title": "The Prestige", "genre": "Drama", "year": 2006, "rating": 8.5, "director": "Christopher Nolan", "tags": ["illusion", "obsession", "twist", "rivalry", "physics"], "description": "Two rival stage magicians engage in escalating sabotage to create the ultimate illusion."}, {"id": 35, "title": "A Beautiful Mind", "genre": "Drama", "year": 2001, "rating": 8.2, "director": "Ron Howard", "tags": ["mathematics", "game-theory", "biography", "psychological", "code-breaking"], "description": "Mathematician John Nash makes groundbreaking game-theory discoveries while battling schizophrenia."}, {"id": 36, "title": "12 Angry Men", "genre": "Drama", "year": 1957, "rating": 9.0, "director": "Sidney Lumet", "tags": ["courtroom", "jury", "psychology", "ethics", "investigation"], "description": "A lone dissenting juror forces eleven peers to examine their biases in a murder deliberation."}, {"id": 37, "title": "Prisoners", "genre": "Thriller", "year": 2013, "rating": 8.2, "director": "Denis Villeneuve", "tags": ["investigation", "detective", "suspense", "kidnapping", "noir"], "description": "A desperate father takes matters into his own hands as a methodical detective races to find missing children."}, {"id": 38, "title": "Gone Girl", "genre": "Thriller", "year": 2014, "rating": 8.1, "director": "David Fincher", "tags": ["deception", "psychological", "twist", "journalism", "suspense"], "description": "Media scrutiny turns fierce when a husband becomes the prime suspect in his wife's sudden disappearance."}, {"id": 39, "title": "Nightcrawler", "genre": "Thriller", "year": 2014, "rating": 7.8, "director": "Dan Gilroy", "tags": ["journalism", "neon", "ambition", "noir", "psychological"], "description": "A driven opportunist blurs ethical boundaries filming nocturnal crime scenes for local television news."}, {"id": 40, "title": "No Country for Old Men", "genre": "Thriller", "year": 2007, "rating": 8.2, "director": "Joel & Ethan Coen", "tags": ["chase", "cartel", "suspense", "crime", "survival"], "description": "A hunter stumbles upon cartel cash in the Texas desert, triggering a relentless pursuit by a hitman."}, {"id": 41, "title": "Sicario", "genre": "Thriller", "year": 2015, "rating": 7.7, "director": "Denis Villeneuve", "tags": ["cartel", "espionage", "operation", "ethics", "suspense"], "description": "An idealistic FBI agent joins a covert task force targeting cartel leadership along the border."}, {"id": 42, "title": "The Silence of the Lambs", "genre": "Thriller", "year": 1991, "rating": 8.6, "director": "Jonathan Demme", "tags": ["fbi", "serial-killer", "psychological", "investigation", "profiler"], "description": "An FBI trainee seeks behavioral insights from an imprisoned psychiatrist to catch an active killer."}, {"id": 43, "title": "Memento", "genre": "Mystery", "year": 2000, "rating": 8.4, "director": "Christopher Nolan", "tags": ["memory", "twist", "noir", "investigation", "revenge"], "description": "A man with anterograde amnesia uses Polaroids and tattoos to hunt his wife's murderer in reverse chronology."}, {"id": 44, "title": "Glass Onion", "genre": "Mystery", "year": 2022, "rating": 7.1, "director": "Rian Johnson", "tags": ["whodunnit", "detective", "silicon-valley", "island", "deception"], "description": "A tech billionaire's private-island murder-mystery game turns real under Detective Benoit Blanc's watch."}, {"id": 45, "title": "Memories of Murder", "genre": "Mystery", "year": 2003, "rating": 8.1, "director": "Bong Joon-ho", "tags": ["detective", "unsolved", "investigation", "noir", "crime"], "description": "Rural and Seoul detectives clash over forensic methods while hunting South Korea's first serial killer."}, {"id": 46, "title": "Chinatown", "genre": "Mystery", "year": 1974, "rating": 8.1, "director": "Roman Polanski", "tags": ["noir", "detective", "conspiracy", "corruption", "investigation"], "description": "A 1930s Los Angeles private eye uncovers systemic municipal water corruption behind a routine case."}, {"id": 47, "title": "The Usual Suspects", "genre": "Mystery", "year": 1995, "rating": 8.5, "director": "Bryan Singer", "tags": ["heist", "twist", "deception", "crime", "interrogation"], "description": "A sole survivor narrates an intricate lineup heist orchestrated by a mythical underworld figure."}, {"id": 48, "title": "L.A. Confidential", "genre": "Mystery", "year": 1997, "rating": 8.2, "director": "Curtis Hanson", "tags": ["noir", "detective", "corruption", "crime", "journalism"], "description": "Three contrasting LAPD detectives investigate a diner massacre tied to police corruption."}, {"id": 49, "title": "The Nice Guys", "genre": "Mystery", "year": 2016, "rating": 7.4, "director": "Shane Black", "tags": ["detective", "buddy-cop", "conspiracy", "noir", "banter"], "description": "A bumbling private eye and an enforcer team up in 1977 Los Angeles to track a missing woman."}, {"id": 50, "title": "Catch Me If You Can", "genre": "Mystery", "year": 2002, "rating": 8.1, "director": "Steven Spielberg", "tags": ["fbi", "con-artist", "deception", "aviation", "chase"], "description": "An FBI fraud agent spends years chasing a charismatic young impostor forging millions in checks."}, {"id": 51, "title": "Groundhog Day", "genre": "Comedy", "year": 1993, "rating": 8.0, "director": "Harold Ramis", "tags": ["time", "loop", "satire", "redemption", "philosophy"], "description": "A cynical weather forecaster relives February 2nd indefinitely until he learns genuine empathy."}, {"id": 52, "title": "The Grand Budapest Hotel", "genre": "Comedy", "year": 2014, "rating": 8.1, "director": "Wes Anderson", "tags": ["heist", "quirky", "hotel", "inheritance", "capers"], "description": "A devoted concierge and his lobby boy become entangled in the theft of a priceless Renaissance painting."}, {"id": 53, "title": "Game Night", "genre": "Comedy", "year": 2018, "rating": 6.9, "director": "John Francis Daley", "tags": ["friendship", "party", "mystery", "twist", "banter"], "description": "A group of competitive friends find their weekly murder-mystery party turns into a real kidnapping."}, {"id": 54, "title": "The Big Short", "genre": "Comedy", "year": 2015, "rating": 7.8, "director": "Adam McKay", "tags": ["finance", "satire", "algorithm", "crisis", "investigation"], "description": "Contrarian investors uncover the 2007 housing bubble and bet against Wall Street's systemic collapse."}, {"id": 55, "title": "Palm Springs", "genre": "Comedy", "year": 2020, "rating": 7.4, "director": "Max Barbakow", "tags": ["time", "loop", "wedding", "philosophy", "banter"], "description": "Two wedding guests get trapped in a quantum time loop together in the California desert."}, {"id": 56, "title": "Hot Fuzz", "genre": "Comedy", "year": 2007, "rating": 7.8, "director": "Edgar Wright", "tags": ["buddy-cop", "satire", "mystery", "action", "detective"], "description": "An overachieving London constable is reassigned to a sleepy village hiding a bizarre conspiracy."}, {"id": 57, "title": "Shaun of the Dead", "genre": "Comedy", "year": 2004, "rating": 7.9, "director": "Edgar Wright", "tags": ["friendship", "survival", "satire", "banter", "apocalypse"], "description": "An aimless electronics salesman tries to win back his ex while surviving a sudden zombie outbreak."}, {"id": 58, "title": "The Truman Show", "genre": "Comedy", "year": 1998, "rating": 8.2, "director": "Peter Weir", "tags": ["simulation", "satire", "media", "philosophy", "escape"], "description": "An insurance salesman begins noticing cracks in an entire town built secretly around his life."}, {"id": 59, "title": "Booksmart", "genre": "Comedy", "year": 2019, "rating": 7.1, "director": "Olivia Wilde", "tags": ["high-school", "friendship", "party", "coming-of-age", "banter"], "description": "Two academic overachievers pack four years of missed fun into a single night before graduation."}, {"id": 60, "title": "21 Jump Street", "genre": "Comedy", "year": 2012, "rating": 7.2, "director": "Phil Lord", "tags": ["buddy-cop", "high-school", "undercover", "banter", "action"], "description": "Two mismatched rookie cops go undercover as high school students to bust a synthetic drug ring."}], "users": [{"user_id": 0, "username": "user_001", "primary_genre": "Sci-Fi", "preferred_tags": ["time", "survival", "space"], "history_count": 5, "history_item_ids": [24, 6, 1, 2, 3]}, {"user_id": 1, "username": "user_002", "primary_genre": "Action", "preferred_tags": ["assassin", "chase", "espionage"], "history_count": 6, "history_item_ids": [29, 7, 26, 8, 30, 27]}, {"user_id": 2, "username": "user_003", "primary_genre": "Drama", "preferred_tags": ["obsession", "biography", "betrayal"], "history_count": 7, "history_item_ids": [11, 36, 35, 13, 33, 31, 12]}, {"user_id": 3, "username": "user_004", "primary_genre": "Thriller", "preferred_tags": ["psychological", "noir", "detective"], "history_count": 7, "history_item_ids": [33, 16, 37, 17, 41, 42, 38]}, {"user_id": 4, "username": "user_005", "primary_genre": "Mystery", "preferred_tags": ["twist", "detective", "investigation"], "history_count": 6, "history_item_ids": [48, 19, 45, 18, 44, 43]}, {"user_id": 5, "username": "user_006", "primary_genre": "Comedy", "preferred_tags": ["high-school", "banter", "friendship"], "history_count": 4, "history_item_ids": [27, 56, 51, 53]}, {"user_id": 6, "username": "user_007", "primary_genre": "Comedy", "preferred_tags": ["friendship", "high-school", "satire"], "history_count": 5, "history_item_ids": [57, 56, 55, 52, 24]}, {"user_id": 7, "username": "user_008", "primary_genre": "Comedy", "preferred_tags": ["satire", "banter", "high-school"], "history_count": 7, "history_item_ids": [47, 46, 56, 43, 59, 57, 58]}, {"user_id": 8, "username": "user_009", "primary_genre": "Action", "preferred_tags": ["espionage", "assassin", "vigilante"], "history_count": 7, "history_item_ids": [8, 10, 49, 27, 9, 19, 26]}, {"user_id": 9, "username": "user_010", "primary_genre": "Sci-Fi", "preferred_tags": ["time", "ai", "survival"], "history_count": 5, "history_item_ids": [2, 3, 9, 24, 21]}, {"user_id": 10, "username": "user_011", "primary_genre": "Thriller", "preferred_tags": ["suspense", "noir", "psychological"], "history_count": 7, "history_item_ids": [39, 27, 42, 37, 26, 38, 40]}, {"user_id": 11, "username": "user_012", "primary_genre": "Action", "preferred_tags": ["assassin", "chase", "vigilante"], "history_count": 8, "history_item_ids": [26, 40, 18, 28, 39, 9, 29, 7]}, {"user_id": 12, "username": "user_013", "primary_genre": "Action", "preferred_tags": ["vigilante", "chase", "assassin"], "history_count": 6, "history_item_ids": [29, 35, 6, 13, 9, 26]}, {"user_id": 13, "username": "user_014", "primary_genre": "Comedy", "preferred_tags": ["high-school", "banter", "friendship"], "history_count": 6, "history_item_ids": [9, 26, 58, 56, 55, 52]}, {"user_id": 14, "username": "user_015", "primary_genre": "Sci-Fi", "preferred_tags": ["time", "ai", "survival"], "history_count": 6, "history_item_ids": [4, 21, 23, 24, 50, 22]}, {"user_id": 15, "username": "user_016", "primary_genre": "Comedy", "preferred_tags": ["satire", "high-school", "banter"], "history_count": 6, "history_item_ids": [4, 58, 54, 60, 25, 57]}, {"user_id": 16, "username": "user_017", "primary_genre": "Drama", "preferred_tags": ["betrayal", "physics", "obsession"], "history_count": 6, "history_item_ids": [31, 35, 11, 33, 36, 34]}, {"user_id": 17, "username": "user_018", "primary_genre": "Sci-Fi", "preferred_tags": ["survival", "time", "space"], "history_count": 7, "history_item_ids": [5, 17, 2, 4, 22, 18, 21]}, {"user_id": 18, "username": "user_019", "primary_genre": "Drama", "preferred_tags": ["betrayal", "physics", "obsession"], "history_count": 7, "history_item_ids": [13, 12, 9, 14, 32, 35, 11]}, {"user_id": 19, "username": "user_020", "primary_genre": "Comedy", "preferred_tags": ["friendship", "banter", "high-school"], "history_count": 6, "history_item_ids": [20, 51, 59, 47, 60, 52]}, {"user_id": 20, "username": "user_021", "primary_genre": "Drama", "preferred_tags": ["obsession", "betrayal", "biography"], "history_count": 7, "history_item_ids": [35, 34, 13, 32, 22, 11, 31]}, {"user_id": 21, "username": "user_022", "primary_genre": "Comedy", "preferred_tags": ["friendship", "satire", "banter"], "history_count": 7, "history_item_ids": [53, 51, 59, 60, 28, 56, 55]}, {"user_id": 22, "username": "user_023", "primary_genre": "Comedy", "preferred_tags": ["satire", "banter", "friendship"], "history_count": 4, "history_item_ids": [36, 60, 59, 57]}, {"user_id": 23, "username": "user_024", "primary_genre": "Action", "preferred_tags": ["chase", "espionage", "assassin"], "history_count": 7, "history_item_ids": [6, 3, 7, 10, 23, 30, 25]}], "user_embeddings": {"0": [0.0379, 0.1402, 0.2684, 0.2769, 0.0655, -0.0154, -0.0288, -0.1436, -0.0703, -0.2025, 0.0237, -0.0249, -0.2727, -0.096, 0.2091, -0.1189, -0.0518, 0.1709, 0.2289, 0.0334, 0.5006, 0.0873, 0.0581, 0.187, -0.3711, 0.0818, 0.0615, -0.0268, -0.265, 0.1085, 0.0516, -0.0139], "1": [0.0442, 0.0678, 0.0649, 0.0402, 0.0269, -0.0895, 0.0014, -0.3025, 0.0129, -0.2714, -0.0456, 0.1469, 0.0337, -0.1163, 0.099, -0.0079, -0.072, 0.399, 0.3813, 0.0879, 0.1683, 0.3275, 0.3693, 0.128, -0.0041, -0.01, 0.2656, -0.0831, -0.1725, -0.1604, 0.0364, 0.1587], "2": [0.2967, -0.0693, 0.1957, -0.0616, 0.3065, -0.0208, -0.0095, -0.1488, -0.1976, -0.4398, -0.2865, 0.1209, -0.249, -0.0965, -0.0432, -0.0666, -0.0662, 0.2489, 0.2982, 0.0054, 0.1838, 0.0136, 0.2568, -0.0049, 0.1265, 0.0513, 0.1706, 0.0563, 0.1053, 0.1, -0.0997, -0.067], "3": [0.2331, -0.4034, 0.2042, -0.0599, -0.0678, -0.1701, 0.057, -0.3156, 0.0751, -0.2703, -0.1354, -0.1499, -0.0534, -0.1373, -0.3275, 0.0099, 0.0321, 0.1591, 0.1628, -0.053, 0.0601, 0.181, 0.0632, 0.0097, -0.0183, -0.1569, 0.1826, 0.0996, 0.1438, 0.2325, -0.2444, -0.2321], "4": [0.16, -0.0121, 0.0604, 0.0545, -0.3154, 0.1929, 0.0471, -0.2693, -0.1668, -0.3651, -0.0343, -0.2128, -0.1259, -0.1032, -0.0254, 0.149, -0.2646, 0.115, 0.1317, 0.1433, 0.1934, 0.1912, 0.0506, 0.064, 0.1471, 0.022, 0.2384, 0.1496, 0.0677, 0.2086, -0.0426, 0.3823], "5": [0.085, -0.1913, 0.0087, -0.013, -0.0301, -0.1424, 0.1083, -0.0956, 0.0354, -0.2545, -0.0597, 0.1134, 0.1572, -0.0364, 0.1215, 0.1512, -0.0043, 0.5281, 0.0913, -0.0004, 0.1155, 0.3926, 0.2609, 0.0392, 0.276, 0.0292, 0.2525, 0.012, -0.2749, -0.1518, 0.0399, -0.0489], "6": [-0.055, -0.2572, 0.3019, -0.1226, -0.1576, -0.0718, 0.0186, -0.1844, -0.0363, -0.0863, 0.0484, -0.0905, 0.0009, 0.0056, 0.1965, 0.1529, -0.0531, 0.4736, 0.0246, -0.1408, 0.3418, 0.3247, 0.0879, -0.1276, 0.2694, 0.0365, 0.1308, -0.011, -0.1173, 0.0773, -0.0609, -0.2658], "7": [-0.0539, -0.0618, 0.2496, -0.0885, -0.1793, 0.1003, 0.0106, -0.0761, -0.0719, -0.2922, 0.1283, 0.0575, 0.0794, -0.1256, 0.2, -0.0128, 0.0405, 0.4326, -0.0853, -0.0211, 0.3682, 0.4396, 0.1412, -0.1007, 0.2488, -0.1279, 0.174, 0.1177, -0.0798, 0.0468, 0.124, 0.027], "8": [-0.0606, 0.2049, 0.1357, -0.0003, -0.1018, -0.0088, -0.0103, -0.3983, -0.0934, -0.2915, 0.0587, -0.0165, -0.1407, -0.1053, 0.1496, -0.0602, -0.124, 0.26, 0.2067, 0.1873, 0.2721, 0.1783, 0.1831, 0.3108, -0.0291, 0.1727, 0.3194, -0.1564, -0.1514, -0.0864, 0.0506, 0.1601], "9": [-0.0217, 0.0139, 0.2962, -0.0061, -0.0964, -0.081, 0.0121, -0.2082, -0.115, -0.1963, 0.0558, -0.0346, -0.3487, -0.1638, 0.0844, 0.0556, 0.1141, 0.3623, 0.1748, -0.0713, 0.345, 0.2496, 0.0833, 0.2576, -0.1168, 0.1647, 0.1447, -0.3309, -0.1639, 0.0209, 0.0354, -0.0573], "10": [0.2006, -0.0718, 0.0512, 0.1293, -0.059, -0.1054, -0.0088, -0.3015, 0.211, -0.2241, -0.0301, -0.1665, -0.0847, -0.0548, -0.0317, 0.0879, -0.0482, 0.3008, 0.1312, -0.0989, 0.1379, 0.4868, -0.0191, 0.0017, -0.1425, -0.0417, 0.313, -0.0954, -0.2624, -0.1141, -0.3153, 0.0297], "11": [-0.0402, -0.0379, -0.001, 0.0977, -0.1457, -0.0881, 0.1541, -0.2322, 0.1617, -0.2822, -0.0992, -0.033, -0.1083, -0.0525, 0.0066, 0.0774, -0.1236, 0.2513, 0.1673, -0.0727, -0.0175, 0.4837, 0.0852, 0.1824, 0.0035, -0.1803, 0.4196, -0.2605, -0.1758, -0.1291, -0.0894, 0.1584], "12": [-0.0533, 0.1155, 0.2187, -0.0025, 0.2326, 0.0252, 0.1099, -0.0888, -0.1644, -0.1687, -0.2195, 0.3257, -0.1838, -0.1033, 0.1066, -0.2487, 0.0492, 0.3551, 0.2549, 0.0995, 0.0373, 0.3379, 0.2569, 0.0674, -0.0026, 0.022, 0.1554, -0.2481, -0.1065, -0.0917, 0.1913, -0.0422], "13": [-0.116, -0.149, 0.1788, -0.0131, -0.0186, -0.0737, -0.0359, -0.1191, 0.1755, -0.0756, -0.0276, 0.0935, 0.0202, -0.082, 0.1731, 0.1257, 0.1103, 0.4454, 0.0947, -0.0875, -0.0014, 0.5207, 0.1816, 0.1211, 0.1206, 0.0859, 0.1359, -0.3122, -0.2109, -0.2336, 0.0934, -0.1428], "14": [-0.1184, 0.0338, 0.3874, -0.0701, -0.033, -0.1252, 0.1342, -0.3128, -0.1698, -0.1828, 0.1329, -0.0784, -0.3088, -0.1337, 0.0999, -0.1259, 0.0488, 0.3439, 0.1925, -0.0461, 0.3888, 0.037, 0.1215, 0.1673, 0.0473, 0.1445, 0.1351, -0.0359, 0.0081, 0.1614, 0.0209, -0.2182], "15": [-0.1177, -0.1086, 0.3912, -0.0739, -0.0249, -0.0198, 0.124, 0.0218, -0.0683, -0.2213, -0.0283, 0.1822, -0.0265, -0.1223, 0.3319, 0.0614, 0.0332, 0.5269, 0.1281, -0.1279, 0.3034, 0.3142, 0.1469, -0.0126, 0.0865, 0.004, 0.0755, 0.0488, -0.0811, 0.038, 0.0892, -0.1619], "16": [0.1951, -0.1241, 0.2099, -0.0723, 0.2153, -0.0936, 0.1648, -0.0668, -0.1332, -0.3886, -0.2842, 0.2025, -0.1035, -0.0829, 0.0146, -0.0911, 0.0121, 0.338, 0.3755, -0.0072, 0.1537, 0.0694, 0.2921, 0.1018, 0.1208, -0.0552, 0.2649, 0.0459, 0.1051, 0.0367, -0.1089, -0.0064], "17": [-0.171, -0.1061, 0.3872, 0.0513, -0.153, -0.0005, 0.1241, -0.2621, 0.0022, -0.1215, -0.0462, -0.1903, -0.1972, -0.0894, 0.0145, 0.0646, -0.0394, 0.3205, 0.3778, -0.2178, 0.2148, 0.2846, 0.0349, 0.0733, -0.0582, -0.1673, 0.1058, -0.0366, 0.132, 0.2724, -0.1607, -0.0743], "18": [0.136, -0.11, 0.2178, -0.01, 0.0793, 0.0883, -0.0077, -0.1458, -0.2091, -0.4809, -0.3043, 0.2465, -0.268, -0.1027, -0.003, 0.0659, -0.1441, 0.3213, 0.1638, 0.0011, 0.1461, 0.2294, 0.1696, 0.0734, 0.1016, -0.0535, 0.2682, -0.0756, 0.1368, -0.0319, 0.043, 0.0028], "19": [-0.0138, -0.2047, 0.08, -0.1954, -0.1635, -0.1478, 0.0513, -0.3372, -0.0522, -0.1877, 0.1674, -0.0561, 0.0819, -0.1341, 0.1069, 0.0645, -0.0589, 0.4191, 0.032, 0.0211, 0.1916, 0.3114, 0.2191, -0.0421, 0.3868, 0.0442, 0.1162, 0.1283, -0.0594, 0.0763, 0.1375, -0.2552], "20": [0.1935, -0.1116, 0.2898, -0.0143, 0.2981, -0.0472, -0.0087, -0.0373, -0.1814, -0.3604, -0.275, 0.2062, -0.2212, -0.0665, 0.0265, -0.0897, 0.0018, 0.3146, 0.3866, -0.1278, 0.1772, 0.1103, 0.2467, -0.0384, 0.0762, 0.0827, 0.0794, -0.071, 0.1378, -0.0308, -0.0994, -0.0771], "21": [-0.2187, -0.0725, -0.0624, -0.0828, -0.0943, -0.1233, -0.0027, -0.1477, 0.2986, 0.0073, -0.0428, 0.0634, 0.1722, 0.0342, 0.1714, 0.1029, -0.0158, 0.4256, 0.0302, 0.0062, 0.0162, 0.5319, 0.248, -0.036, 0.2129, -0.1076, 0.1011, -0.1077, -0.2666, -0.2089, -0.0143, -0.0492], "22": [0.0709, -0.1463, 0.1683, -0.0596, 0.0628, -0.0555, -0.0203, -0.0243, -0.1171, -0.086, -0.3253, 0.0192, 0.1905, 0.0233, 0.1748, 0.25, -0.1594, 0.5501, 0.1678, 0.0351, 0.1043, 0.3398, 0.187, -0.1109, 0.2431, 0.044, 0.0706, 0.0902, -0.1568, -0.0207, -0.1549, -0.1493], "23": [-0.1263, 0.0203, 0.3808, 0.1115, 0.0446, 0.134, -0.0277, -0.061, -0.1074, -0.072, -0.1753, 0.1844, -0.2196, -0.1171, 0.21, -0.0962, -0.1166, 0.2069, 0.3949, -0.0449, 0.1126, 0.1844, 0.2337, 0.274, -0.3407, 0.0504, 0.1795, -0.2166, 0.0145, -0.0826, -0.0281, -0.0935]}, "item_embeddings": {"1": [0.0686, 0.1514, 0.2913, 0.0653, -0.2258, 0.1882, -0.2152, 0.0211, -0.1046, -0.0401, 0.0685, -0.1783, -0.1885, 0.2087, 0.1068, 0.1356, -0.0996, 0.0895, 0.1321, -0.2482, 0.2614, 0.1079, -0.2498, 0.2347, -0.3094, 0.2394, -0.21, -0.1758, 0.1004, 0.1761, -0.0745, -0.1515], "2": [-0.0192, 0.2277, 0.2599, -0.0881, -0.224, 0.0872, -0.0674, 0.0063, -0.1562, -0.0459, 0.1111, -0.1784, -0.2306, 0.239, 0.12, 0.0524, -0.0146, 0.1735, 0.1156, -0.2746, 0.2803, 0.1141, -0.2471, 0.2714, -0.2684, 0.2498, -0.1881, -0.1457, 0.0617, 0.2225, -0.0715, -0.1306], "3": [0.265, 0.1983, 0.282, 0.0447, -0.1287, 0.0869, -0.135, 0.0114, -0.0446, -0.14, 0.0066, -0.0258, -0.2142, 0.2384, -0.0258, -0.0463, -0.0858, 0.175, 0.1873, -0.2827, 0.2066, 0.1669, -0.223, 0.1818, -0.3983, 0.1628, -0.1954, -0.115, 0.1001, 0.1541, -0.1763, -0.176], "4": [0.0768, 0.2503, 0.3065, -0.1762, -0.0785, 0.0343, 0.1135, 0.0591, -0.1497, -0.053, 0.0381, 0.0282, -0.1595, 0.347, 0.1632, -0.1489, -0.0583, 0.3196, 0.2236, -0.3232, 0.1874, 0.1138, -0.0893, 0.1112, -0.1257, 0.2231, -0.2146, -0.0664, 0.0763, 0.1994, -0.0572, -0.2595], "5": [-0.0557, 0.1512, 0.3268, 0.0411, -0.2799, 0.2019, -0.1583, 0.0054, -0.0387, -0.0138, 0.0131, -0.1019, -0.1273, 0.2539, 0.1389, 0.1242, -0.1031, 0.1544, 0.2044, -0.3376, 0.2194, 0.1403, -0.2076, 0.1614, -0.2558, 0.1814, -0.2232, -0.17, 0.1893, 0.1235, -0.1467, -0.1298], "6": [-0.0292, 0.3336, 0.1335, 0.2828, 0.0753, 0.0228, -0.0183, 0.0569, -0.0507, -0.1859, 0.097, 0.3476, 0.0935, 0.2105, 0.0626, -0.1339, 0.002, 0.1182, 0.2135, -0.0961, 0.0149, 0.2269, -0.0189, 0.1612, -0.3585, 0.002, 0.0942, -0.2823, -0.2754, -0.1634, 0.1587, 0.2156], "7": [0.0519, 0.3, 0.0338, 0.129, -0.0672, 0.1577, 0.0277, 0.0896, 0.0384, -0.1039, -0.0181, 0.1448, 0.0236, 0.2162, 0.0484, 0.0502, 0.0384, 0.1452, 0.2887, -0.2119, -0.0308, 0.2415, 0.268, 0.3379, -0.2484, 0.1134, 0.1065, -0.2011, -0.1062, -0.1687, 0.0055, 0.451], "8": [0.1016, 0.4131, -0.0661, 0.0577, -0.0694, 0.0917, -0.0668, -0.0935, 0.0265, -0.1377, -0.0699, 0.1985, 0.1831, 0.2541, 0.177, 0.0571, -0.1093, 0.1586, 0.1851, -0.0902, -0.013, 0.1731, 0.2249, 0.1976, -0.0262, 0.2316, 0.0817, -0.2414, -0.227, -0.2576, -0.0642, 0.3843], "9": [-0.0193, 0.3406, 0.1805, 0.0008, -0.1122, 0.0511, -0.0065, -0.0317, -0.0778, -0.2539, -0.0015, 0.2942, -0.0347, 0.1871, 0.0455, 0.0778, 0.0944, 0.2033, -0.037, -0.1938, -0.1113, 0.2224, -0.0033, 0.2925, -0.1335, 0.1225, 0.1451, -0.4351, -0.0839, -0.1614, 0.1763, 0.2991], "10": [-0.0398, 0.3135, 0.0658, 0.1609, -0.1871, 0.1765, 0.0093, 0.0287, 0.0172, -0.268, -0.0349, 0.2804, 0.1174, 0.1847, 0.0521, -0.0545, -0.1983, 0.0261, 0.357, -0.0077, -0.0021, -0.0277, 0.0798, 0.3535, -0.3853, 0.015, 0.2094, -0.1523, -0.1168, -0.0535, 0.1407, 0.2139], "11": [0.2645, 0.0918, 0.0967, -0.2247, 0.0804, 0.0304, 0.2475, -0.1303, -0.4109, -0.1925, -0.3005, 0.1948, -0.2183, 0.3081, -0.2184, -0.0957, -0.0722, 0.2216, 0.139, -0.1011, -0.2028, 0.0622, -0.0483, 0.08, 0.1128, 0.0225, -0.0867, 0.0784, 0.1201, 0.2131, 0.0143, -0.1342], "12": [0.3123, 0.1305, 0.1522, -0.2507, -0.0408, 0.0457, 0.13, -0.1474, -0.3898, -0.1898, -0.3179, -0.0131, -0.0879, 0.3063, -0.2178, 0.1019, 0.0121, 0.2187, 0.2153, -0.0985, -0.1965, 0.0233, 0.0102, 0.2939, 0.0675, 0.0623, -0.0488, 0.0742, 0.1583, 0.1753, -0.0188, -0.0797], "13": [0.134, 0.1851, 0.2305, -0.1387, 0.1752, 0.2099, 0.0682, -0.0418, -0.4571, -0.2608, -0.4021, 0.282, 0.0106, 0.335, -0.0266, 0.0296, -0.1258, 0.16, 0.1595, -0.0347, -0.1518, 0.0782, 0.0634, -0.0133, 0.1103, 0.0757, -0.147, 0.0676, 0.031, 0.0681, 0.105, 0.0002], "14": [0.1779, 0.0778, 0.0902, -0.1084, 0.064, -0.0522, 0.2835, 0.0094, -0.2297, -0.0899, -0.5408, 0.2226, -0.0848, 0.3965, -0.1508, 0.2097, -0.1093, 0.3371, 0.0264, 0.0403, -0.1636, 0.0551, -0.0544, 0.1434, 0.0758, -0.0048, 0.0241, -0.0157, 0.0815, -0.1011, -0.1233, -0.0366], "15": [0.139, 0.0673, 0.0313, 0.1061, -0.396, -0.1352, 0.0878, -0.3166, 0.0599, -0.2359, 0.1664, -0.0562, -0.1158, 0.2892, -0.2817, -0.0556, -0.0663, 0.0894, -0.0857, -0.1424, -0.1204, 0.2955, -0.2828, 0.1238, -0.1782, -0.2389, 0.0727, -0.0661, -0.1789, 0.1701, 0.0717, -0.0982], "16": [0.3474, -0.0676, 0.0091, 0.0933, -0.2534, -0.1964, -0.0224, -0.3046, 0.0409, -0.1495, 0.0607, -0.0347, -0.0922, 0.172, -0.3423, 0.0188, -0.1057, 0.1137, 0.0113, -0.2928, -0.233, 0.2124, -0.2917, 0.0311, 0.0077, -0.0899, -0.0315, -0.2577, 0.043, 0.2106, -0.0271, -0.2596], "17": [0.1788, 0.0523, 0.1305, 0.0405, -0.3546, -0.0265, 0.0739, -0.3596, 0.0298, -0.1566, -0.0788, -0.2004, -0.07, 0.351, -0.2731, 0.0692, -0.1431, 0.0833, 0.0969, -0.1926, -0.1618, 0.1044, -0.3397, 0.1369, -0.1566, -0.2087, 0.1236, 0.0051, 0.0102, 0.1998, -0.1823, -0.0668], "18": [0.0921, 0.008, 0.041, 0.0837, -0.4755, 0.1113, -0.0189, -0.1434, -0.0048, -0.2285, -0.1156, -0.045, 0.0855, 0.3482, -0.165, 0.1638, -0.2651, 0.1498, 0.1087, -0.2243, -0.0889, 0.2947, -0.1491, -0.0116, -0.1119, -0.3388, 0.1869, 0.1052, 0.0582, 0.1132, -0.081, 0.0708], "19": [0.2582, 0.3671, 0.201, -0.0721, -0.2498, 0.1751, 0.0439, -0.3159, -0.4171, -0.2798, 0.0459, 0.1192, -0.1139, 0.2522, 0.0535, 0.0173, -0.2371, 0.0051, -0.1288, -0.013, 0.1475, 0.0768, -0.1996, 0.0722, 0.0752, 0.0634, 0.0055, 0.0948, -0.1782, 0.0748, 0.0539, 0.0725], "20": [0.248, 0.0808, 0.1262, -0.231, -0.166, -0.0484, 0.0629, -0.1591, -0.1094, -0.1836, 0.229, 0.1162, 0.2278, 0.3119, -0.0537, -0.0559, 0.0917, 0.3625, 0.034, -0.3496, -0.0963, 0.2488, 0.0623, -0.0619, 0.2926, 0.0269, -0.124, 0.0883, 0.0687, 0.1571, 0.133, -0.1952], "21": [-0.0862, 0.1506, 0.4952, -0.1294, -0.1867, 0.0247, -0.0199, -0.052, -0.0245, -0.0146, 0.222, -0.0301, -0.0397, 0.2689, 0.1108, 0.0298, 0.0505, 0.2066, 0.0665, -0.2583, 0.1677, 0.1444, -0.2031, 0.2102, -0.2717, 0.2417, -0.1192, -0.1257, 0.0868, 0.1432, -0.0442, -0.2971], "22": [0.0918, 0.1485, 0.3874, -0.0309, -0.0676, 0.154, -0.1027, 0.1067, -0.2553, -0.1726, -0.0086, 0.0181, -0.1787, 0.3041, 0.1374, 0.0636, -0.046, 0.1934, 0.1539, -0.3382, 0.2172, 0.1046, -0.2213, 0.1618, -0.2469, 0.1753, -0.188, -0.073, 0.1288, 0.1919, -0.0145, -0.1693], "23": [0.0116, 0.1832, 0.3978, -0.1574, -0.0862, 0.1348, -0.0415, 0.0296, -0.1917, 0.0356, 0.092, -0.0154, -0.179, 0.2721, 0.1641, -0.0318, -0.0595, 0.2322, 0.1924, -0.2958, 0.1725, 0.0873, -0.1134, 0.1825, -0.2105, 0.3279, -0.1804, -0.0794, 0.1708, 0.1392, -0.0863, -0.2494], "24": [0.0758, 0.2459, 0.3366, -0.1815, -0.0215, 0.0413, 0.0823, 0.0759, -0.1842, -0.1169, 0.0897, -0.0379, -0.0976, 0.3208, 0.1326, -0.0927, -0.0268, 0.2992, 0.1164, -0.2466, 0.2613, 0.0817, -0.1144, 0.1592, -0.246, 0.2279, -0.2051, 0.0271, 0.0075, 0.2646, -0.0021, -0.2717], "25": [-0.0497, 0.1401, 0.4721, -0.1008, -0.1224, 0.189, -0.0096, 0.0828, -0.2182, -0.0219, -0.0172, 0.044, 0.0112, 0.3054, 0.2342, 0.1075, -0.1158, 0.3037, 0.1656, -0.3207, 0.1246, 0.1392, -0.0854, 0.0551, -0.1228, 0.1955, -0.1668, -0.0036, 0.2038, 0.1465, -0.0305, -0.2255], "26": [0.1361, 0.3123, 0.0628, 0.0953, 0.065, -0.0574, -0.0968, -0.0497, 0.0287, -0.1901, -0.0445, 0.1847, 0.0698, 0.2841, 0.0055, 0.0649, 0.0899, 0.2861, 0.1403, -0.2277, -0.1439, 0.3112, 0.0267, 0.2463, -0.2493, 0.1375, 0.0569, -0.3759, -0.1703, -0.2077, -0.0179, 0.2241], "27": [0.2446, 0.4128, -0.0062, 0.0511, -0.0199, -0.0943, -0.0326, -0.1468, 0.011, -0.1988, 0.1218, 0.112, 0.1264, 0.348, 0.0909, 0.0289, 0.0181, 0.3559, 0.1681, -0.174, 0.0319, 0.225, 0.0088, 0.17, -0.0967, 0.3068, 0.071, -0.1445, -0.2777, -0.119, -0.0713, 0.1735], "28": [-0.207, 0.2077, 0.004, 0.0009, -0.2394, 0.0175, -0.1228, -0.0398, 0.1644, -0.2165, -0.0627, 0.2376, 0.2642, 0.183, -0.0727, -0.0546, -0.0818, 0.1416, 0.0693, 0.0291, -0.3103, 0.381, 0.0375, 0.1455, -0.1965, -0.2235, 0.2254, -0.2091, -0.1894, -0.1299, 0.0943, 0.2295], "29": [0.0395, 0.3541, 0.0717, 0.1527, 0.0229, -0.1118, -0.0619, -0.0662, 0.0173, -0.2952, 0.0659, 0.295, 0.2191, 0.2473, -0.051, -0.0946, 0.0726, 0.2663, 0.1527, -0.1826, -0.1675, 0.3206, -0.007, 0.1067, -0.2138, 0.0109, 0.1333, -0.2302, -0.2064, -0.1219, 0.1156, 0.2478], "30": [-0.0427, 0.3355, 0.074, 0.1733, -0.0774, 0.0023, -0.0244, 0.0319, -0.0657, -0.2336, -0.0483, 0.3958, 0.1089, 0.1374, 0.0741, 0.0919, -0.0749, 0.1283, 0.0853, -0.0192, -0.053, 0.224, 0.0021, 0.1579, -0.2427, 0.0061, 0.112, -0.33, -0.191, -0.2739, 0.1589, 0.3938], "31": [0.3244, 0.085, 0.0533, -0.3416, 0.1946, -0.038, 0.0622, 0.0692, -0.1976, -0.1685, -0.3246, 0.0971, -0.0268, 0.2756, -0.2668, 0.0956, 0.2357, 0.2375, 0.2051, -0.0667, -0.0398, -0.0361, 0.1881, 0.2566, 0.0358, 0.0802, -0.0976, 0.1887, 0.1572, -0.068, -0.1823, -0.0534], "32": [0.2571, 0.0556, 0.0919, -0.1457, -0.029, 0.1543, -0.1569, -0.044, -0.2493, -0.3355, -0.3292, 0.0146, 0.1989, 0.3355, -0.2895, 0.1761, -0.0435, 0.1653, 0.2459, -0.0638, -0.1714, 0.0939, 0.1214, 0.1033, 0.0231, -0.0424, 0.0315, 0.2573, 0.2226, 0.0433, -0.1088, 0.0981], "33": [0.3041, -0.0313, 0.188, -0.2383, 0.1816, 0.0401, -0.0272, 0.0078, -0.2172, -0.3304, -0.1633, 0.1392, 0.1925, 0.2258, -0.3234, 0.0265, 0.2638, 0.1961, 0.1598, -0.1932, -0.1085, 0.0387, 0.1641, 0.0672, 0.0477, -0.1062, -0.0512, 0.2788, 0.2537, 0.0748, -0.011, -0.0616], "34": [0.2004, 0.0339, 0.1756, -0.1951, 0.1618, -0.1331, 0.1136, -0.0355, -0.204, -0.3488, -0.2951, 0.3536, 0.0373, 0.2199, -0.3531, 0.0127, 0.2632, 0.1652, 0.0349, -0.1252, -0.2627, 0.0262, 0.0185, 0.1242, -0.0047, -0.2123, 0.0638, -0.022, 0.1395, -0.1016, 0.0485, -0.0311], "35": [0.209, 0.2409, 0.0873, -0.1977, 0.2436, 0.0404, 0.2572, -0.0493, -0.3374, -0.1793, -0.4892, 0.3164, -0.1025, 0.3266, -0.0888, -0.0, -0.0414, 0.167, 0.1223, 0.0411, -0.1396, -0.0148, 0.0318, 0.1047, 0.0837, 0.0698, -0.0441, 0.0007, -0.0957, -0.0957, -0.0382, 0.0005], "36": [0.2084, 0.2103, 0.1481, -0.1271, 0.1774, 0.0817, 0.1216, 0.0038, -0.4202, -0.1981, -0.5304, 0.2184, 0.0588, 0.3339, -0.0779, 0.172, -0.1069, 0.1789, 0.1212, 0.1159, -0.129, 0.0426, 0.0509, 0.1068, 0.0484, 0.0283, -0.0326, 0.0749, -0.0329, -0.0357, -0.0172, 0.0971], "37": [0.3204, -0.0094, -0.0389, 0.0767, -0.2189, -0.1683, -0.0164, -0.2327, 0.2102, -0.2542, -0.0449, -0.161, -0.1045, 0.1784, -0.4117, 0.0169, 0.0742, 0.0347, -0.0962, -0.1112, -0.1064, 0.2283, -0.3183, 0.14, -0.2774, -0.2192, 0.0326, 0.0995, -0.0428, 0.1562, -0.1434, -0.1206], "38": [0.2561, -0.0097, 0.0756, 0.0544, -0.2881, -0.1056, 0.1092, -0.36, 0.0353, -0.1786, -0.036, -0.1053, 0.0184, 0.3988, -0.1877, 0.101, -0.2312, 0.1474, 0.1053, -0.2656, -0.1367, 0.0907, -0.3327, -0.0142, 0.0036, -0.0884, 0.1249, -0.0965, -0.12, 0.1137, -0.1693, -0.2375], "39": [0.1731, -0.0139, 0.0724, -0.0499, -0.3228, -0.0335, -0.1532, -0.1925, 0.0156, -0.1967, -0.017, -0.0469, -0.2765, 0.2179, -0.2866, 0.1707, 0.0812, 0.1489, -0.113, -0.309, -0.2472, 0.374, -0.1013, 0.2027, -0.1745, -0.1264, 0.1265, -0.2261, 0.059, 0.0079, -0.0036, 0.1144], "40": [0.2325, -0.0563, -0.0671, 0.0125, -0.329, -0.1788, 0.2565, -0.2181, 0.148, -0.1667, -0.0756, -0.1959, -0.018, 0.1936, -0.202, 0.1581, -0.0566, 0.2194, -0.1491, -0.1498, -0.2499, 0.2493, -0.3042, 0.2337, -0.0345, -0.1694, 0.0386, -0.0491, -0.1035, 0.2083, -0.061, -0.1665], "41": [0.4109, -0.0279, 0.1391, -0.0101, -0.1408, -0.0665, 0.0136, -0.2786, -0.1422, -0.185, -0.1487, -0.0668, -0.2746, 0.3191, -0.3238, 0.0878, -0.0154, 0.0113, -0.0184, -0.2031, -0.1202, 0.0794, -0.3283, 0.2116, -0.1476, -0.0216, 0.0509, -0.0106, 0.0217, 0.1721, -0.2215, -0.1363], "42": [0.1666, -0.0015, 0.0001, 0.1083, -0.3966, -0.0707, -0.1288, -0.2659, 0.2217, -0.2576, -0.0736, -0.1188, -0.1783, 0.2362, -0.3539, 0.0037, -0.0647, -0.0125, -0.0127, -0.0544, -0.0785, 0.176, -0.3067, 0.1254, -0.3151, -0.2394, 0.0362, -0.0232, -0.0275, 0.1421, -0.1451, -0.0905], "43": [0.2291, 0.3342, 0.0314, -0.1819, -0.351, 0.123, 0.0792, -0.1933, -0.3336, -0.2593, 0.2901, 0.0346, -0.0868, 0.216, 0.0133, -0.0608, -0.0768, 0.0558, -0.1911, 0.0009, 0.2878, 0.0905, -0.0376, 0.0747, 0.1934, 0.0887, 0.0335, 0.262, -0.0922, 0.1213, 0.0942, 0.085], "44": [0.0095, 0.372, 0.166, -0.1993, -0.2802, 0.2537, 0.0634, -0.2786, -0.266, -0.1277, 0.2088, -0.0253, -0.0838, 0.1641, -0.0216, -0.2348, -0.046, -0.1468, -0.05, 0.0145, 0.0893, -0.0468, 0.1832, 0.2624, 0.1291, 0.0947, 0.1603, 0.305, -0.0093, 0.2123, 0.1285, 0.0613], "45": [0.2576, 0.3281, -0.043, -0.1485, -0.2275, 0.1392, 0.1982, -0.2173, -0.3462, -0.2936, 0.1415, -0.0401, 0.0494, 0.2103, -0.0071, -0.0226, -0.1255, 0.121, -0.0853, 0.1542, 0.178, 0.0518, -0.061, 0.012, 0.1882, 0.0878, -0.0777, 0.3156, -0.1263, 0.2426, 0.2096, -0.0493], "46": [-0.0744, 0.3996, 0.1469, -0.2506, -0.395, 0.1332, 0.1239, -0.1795, -0.3034, -0.1943, 0.2226, 0.1775, -0.0249, 0.1129, 0.1336, -0.014, -0.0382, 0.0387, -0.2889, 0.0302, 0.146, 0.2064, -0.0042, 0.0812, 0.0939, -0.093, 0.1079, 0.0889, -0.1517, 0.0006, 0.222, 0.1401], "47": [0.0463, 0.264, 0.1443, -0.294, -0.3816, 0.1966, -0.1505, -0.2777, -0.2776, -0.1772, 0.2476, -0.0538, -0.0412, 0.0864, 0.0068, -0.0074, -0.0098, -0.0149, -0.2642, -0.1005, 0.0745, 0.3074, 0.0633, 0.0882, 0.1187, -0.1094, 0.0212, 0.2769, -0.0704, 0.165, 0.1644, -0.0235], "48": [0.4171, 0.2274, 0.1858, -0.1863, -0.2327, 0.1288, -0.1742, -0.2458, -0.3968, -0.261, 0.161, -0.0118, -0.0083, 0.2225, -0.1508, 0.0155, -0.0653, 0.0748, -0.1132, -0.0461, 0.1383, 0.1311, -0.003, 0.1279, 0.0569, 0.1085, 0.0304, 0.3247, 0.0147, 0.1395, -0.0231, 0.0174], "49": [0.0201, 0.3766, 0.406, -0.1899, -0.2114, 0.1482, -0.0684, -0.3086, -0.316, -0.2275, 0.1079, 0.0832, 0.0504, 0.1085, -0.109, -0.177, -0.0558, -0.0716, -0.0946, 0.1158, 0.0294, -0.0638, -0.0329, 0.2936, -0.1454, 0.0894, 0.1627, 0.1876, -0.0379, 0.1546, 0.153, -0.0181], "50": [0.0782, 0.3797, 0.1204, -0.1169, -0.3168, 0.0197, 0.239, -0.3644, -0.1526, -0.1936, 0.2733, -0.0454, -0.0598, 0.2668, -0.0749, -0.3158, -0.0188, 0.0368, -0.0165, -0.0092, 0.077, -0.0124, -0.0953, 0.1676, 0.0819, 0.0306, 0.1093, 0.2314, -0.1497, 0.1966, 0.1481, -0.1091], "51": [0.0812, -0.0829, -0.0569, -0.1609, -0.0986, -0.102, 0.1776, 0.0548, 0.2464, -0.0574, 0.2424, 0.0878, 0.3763, 0.1119, 0.1134, 0.0792, 0.2063, 0.3565, -0.2235, -0.1792, -0.0756, 0.2427, 0.1265, 0.0908, 0.2456, 0.0335, -0.1939, 0.1403, -0.1447, 0.0943, 0.1782, -0.2793], "52": [0.1075, -0.0524, 0.1494, -0.1664, -0.1759, -0.0033, -0.1311, -0.0459, 0.0281, -0.0516, 0.0784, 0.1024, 0.3104, 0.2435, 0.0224, 0.0599, 0.112, 0.3306, 0.0117, -0.3987, -0.2028, 0.342, 0.0907, 0.0038, 0.2945, 0.1192, -0.1996, -0.1069, 0.136, 0.0491, 0.1295, -0.2618], "53": [0.1014, 0.0699, 0.0064, -0.229, 0.0541, -0.1984, 0.2216, 0.0588, 0.181, 0.0085, -0.1846, 0.383, 0.2312, 0.313, 0.0272, -0.0423, 0.0828, 0.3894, 0.0096, -0.0591, -0.1301, 0.1902, 0.2299, -0.1031, 0.3322, -0.0158, -0.0448, 0.0574, -0.0014, -0.1907, -0.0414, -0.1929], "54": [0.0158, 0.009, 0.2258, -0.1674, -0.0313, -0.0805, 0.0351, 0.0718, 0.0387, -0.2214, 0.1518, 0.2409, 0.2516, 0.2764, 0.0335, -0.0845, 0.2893, 0.3814, -0.0043, -0.411, -0.0255, 0.249, 0.0952, -0.0165, 0.1112, -0.0335, -0.1728, -0.0034, 0.0513, 0.1204, 0.1907, -0.2457], "55": [0.0479, 0.135, 0.1282, -0.0752, -0.1018, -0.0587, 0.0876, -0.1037, 0.1776, 0.0467, 0.2774, 0.0897, 0.3613, 0.3168, 0.1394, -0.0874, 0.0915, 0.3795, -0.0538, -0.2788, -0.0366, 0.3497, 0.0098, -0.0395, 0.1444, 0.1118, -0.1615, 0.0022, -0.2134, 0.0156, 0.0614, -0.285], "56": [0.1081, -0.0572, 0.0955, -0.1403, -0.2325, 0.1034, -0.089, 0.0894, 0.0859, -0.0027, 0.0949, 0.1437, 0.402, 0.2913, 0.1999, 0.1226, 0.0396, 0.3385, -0.0519, -0.3224, -0.0441, 0.2993, 0.232, -0.0152, 0.3196, 0.0787, -0.1372, 0.0571, 0.0231, 0.027, 0.1043, -0.1618], "57": [0.1372, -0.0234, 0.2246, -0.2018, -0.145, 0.0472, -0.0365, 0.1096, 0.0112, -0.1555, 0.0251, 0.1463, 0.3319, 0.2724, 0.1343, 0.1153, 0.0786, 0.4294, -0.007, -0.3914, -0.0169, 0.2354, 0.078, 0.0022, 0.2069, 0.0315, -0.2092, 0.0669, 0.1229, 0.0978, 0.0843, -0.2478], "58": [-0.1222, 0.04, 0.2983, -0.0302, -0.2127, -0.0148, 0.0593, 0.1197, 0.0584, -0.1791, 0.1682, 0.3025, 0.1801, 0.1672, 0.1265, -0.059, 0.232, 0.2714, -0.124, -0.403, -0.0155, 0.3333, -0.0456, 0.0345, 0.0152, -0.1457, -0.092, -0.1013, -0.0407, 0.035, 0.3186, -0.1753], "59": [0.1273, 0.1637, 0.1171, -0.1523, -0.2337, 0.0064, -0.1849, -0.1889, 0.0085, -0.0482, 0.1653, 0.064, 0.3909, 0.3424, 0.107, -0.0276, -0.0247, 0.3063, 0.1338, -0.2505, -0.1618, 0.3617, 0.1461, -0.0226, 0.2759, 0.1468, -0.0482, 0.0496, -0.0354, -0.0057, 0.0036, -0.148], "60": [0.1668, 0.0088, 0.0512, -0.2428, -0.1854, -0.0358, 0.0033, 0.0327, 0.0806, 0.03, 0.0762, 0.1241, 0.2893, 0.2822, 0.1545, 0.0724, 0.0448, 0.444, -0.0536, -0.2717, -0.1461, 0.3016, 0.1762, 0.0519, 0.3373, 0.1958, -0.1555, 0.0392, 0.0656, -0.0099, 0.0514, -0.2145]}, "genre_centroids": {"Sci-Fi": [-0.0195, -0.0295, 0.4062, 0.0912, -0.069, 0.0449, -0.0077, -0.2333, -0.0851, -0.2058, -0.0414, -0.1023, -0.275, -0.1348, 0.1687, 0.0215, -0.0605, 0.3089, 0.3642, -0.11, 0.4403, 0.1527, 0.127, 0.1438, -0.075, 0.1218, 0.0895, -0.1078, -0.0093, 0.1674, -0.0581, -0.1016], "Action": [-0.0742, 0.0984, 0.1498, 0.0613, 0.0055, -0.0512, 0.0502, -0.2921, -0.0226, -0.2757, -0.085, 0.139, -0.0879, -0.1149, 0.1147, -0.0761, -0.0733, 0.3332, 0.2999, 0.0794, 0.1404, 0.3822, 0.2645, 0.1941, -0.0523, -0.02, 0.3292, -0.2315, -0.2036, -0.1496, 0.0473, 0.0896], "Drama": [0.2601, -0.12, 0.2334, -0.0432, 0.177, -0.0405, 0.1032, -0.1902, -0.1633, -0.4431, -0.3547, 0.1106, -0.1627, -0.1003, -0.0414, 0.0298, -0.0594, 0.3399, 0.2858, 0.0476, 0.1626, 0.1229, 0.1947, 0.0852, 0.0869, 0.0027, 0.2484, 0.0315, 0.0591, 0.0291, -0.1251, -0.0399], "Thriller": [0.2006, -0.2563, 0.201, -0.0025, -0.1402, -0.1267, 0.0255, -0.4283, 0.0329, -0.3207, -0.0915, -0.1317, -0.1414, -0.1547, -0.2666, -0.0112, -0.0587, 0.2124, 0.1131, 0.0006, 0.0921, 0.3665, 0.0146, -0.0114, -0.0381, -0.1184, 0.3138, 0.0041, 0.0038, 0.1267, -0.1881, -0.1385], "Mystery": [0.0447, -0.0554, 0.2068, -0.0895, -0.2997, 0.0294, 0.1205, -0.478, -0.198, -0.3605, -0.0306, -0.089, -0.1496, -0.1757, -0.0088, -0.0619, -0.1804, 0.1419, -0.003, 0.192, 0.1951, 0.1862, 0.0663, 0.0696, 0.2152, 0.0052, 0.3224, 0.1281, -0.0384, 0.1585, 0.0249, 0.0994], "Comedy": [-0.0386, -0.2522, 0.2004, -0.0856, -0.0618, -0.1153, 0.0405, -0.1814, 0.0174, -0.1991, -0.0064, 0.0617, 0.1235, -0.0912, 0.1166, 0.1002, 0.0197, 0.5222, 0.0349, -0.0782, 0.1437, 0.4893, 0.1856, -0.0687, 0.2796, -0.0231, 0.1542, -0.0202, -0.145, -0.0281, 0.0475, -0.1953]}, "latent_map": [{"id": 1, "title": "Interstellar", "genre": "Sci-Fi", "year": 2014, "rating": 8.7, "x": -0.4879, "y": 0.2243}, {"id": 2, "title": "Inception", "genre": "Sci-Fi", "year": 2010, "rating": 8.8, "x": -0.4358, "y": 0.2871}, {"id": 3, "title": "The Matrix", "genre": "Sci-Fi", "year": 1999, "rating": 8.7, "x": -0.4477, "y": 0.1213}, {"id": 4, "title": "Ex Machina", "genre": "Sci-Fi", "year": 2014, "rating": 7.7, "x": -0.0517, "y": 0.384}, {"id": 5, "title": "Blade Runner 2049", "genre": "Sci-Fi", "year": 2017, "rating": 8.0, "x": -0.332, "y": 0.2387}, {"id": 6, "title": "The Dark Knight", "genre": "Action", "year": 2008, "rating": 9.0, "x": 0.1762, "y": -0.7408}, {"id": 7, "title": "Gladiator", "genre": "Action", "year": 2000, "rating": 8.5, "x": 0.2286, "y": -0.7248}, {"id": 8, "title": "Mad Max: Fury Road", "genre": "Action", "year": 2015, "rating": 8.1, "x": 0.3622, "y": -0.6912}, {"id": 9, "title": "John Wick", "genre": "Action", "year": 2014, "rating": 7.4, "x": 0.1874, "y": -0.6122}, {"id": 10, "title": "Top Gun: Maverick", "genre": "Action", "year": 2022, "rating": 8.2, "x": -0.0505, "y": -0.7529}, {"id": 11, "title": "The Social Network", "genre": "Drama", "year": 2010, "rating": 7.8, "x": -0.0675, "y": 0.0549}, {"id": 12, "title": "Oppenheimer", "genre": "Drama", "year": 2023, "rating": 8.3, "x": -0.1298, "y": 0.0293}, {"id": 13, "title": "Whiplash", "genre": "Drama", "year": 2014, "rating": 8.5, "x": 0.2265, "y": -0.153}, {"id": 14, "title": "Fight Club", "genre": "Drama", "year": 1999, "rating": 8.8, "x": 0.1357, "y": -0.2785}, {"id": 15, "title": "Parasite", "genre": "Thriller", "year": 2019, "rating": 8.5, "x": -0.5273, "y": -0.0567}, {"id": 16, "title": "Se7en", "genre": "Thriller", "year": 1995, "rating": 8.6, "x": -0.3987, "y": 0.1406}, {"id": 17, "title": "Shutter Island", "genre": "Thriller", "year": 2010, "rating": 8.2, "x": -0.6592, "y": -0.0217}, {"id": 18, "title": "Zodiac", "genre": "Thriller", "year": 2007, "rating": 7.7, "x": -0.3352, "y": -0.1235}, {"id": 19, "title": "Knives Out", "genre": "Mystery", "year": 2019, "rating": 7.9, "x": -0.3874, "y": -0.038}, {"id": 20, "title": "Superbad", "genre": "Comedy", "year": 2007, "rating": 7.6, "x": 0.3724, "y": 0.5052}, {"id": 21, "title": "Arrival", "genre": "Sci-Fi", "year": 2016, "rating": 7.9, "x": -0.1971, "y": 0.3994}, {"id": 22, "title": "Dune: Part Two", "genre": "Sci-Fi", "year": 2024, "rating": 8.5, "x": -0.2574, "y": 0.2556}, {"id": 23, "title": "The Martian", "genre": "Sci-Fi", "year": 2015, "rating": 8.0, "x": -0.1647, "y": 0.3831}, {"id": 24, "title": "Her", "genre": "Sci-Fi", "year": 2013, "rating": 8.0, "x": -0.1427, "y": 0.4081}, {"id": 25, "title": "Edge of Tomorrow", "genre": "Sci-Fi", "year": 2014, "rating": 7.9, "x": 0.0373, "y": 0.4027}, {"id": 26, "title": "Spider-Man: Into the Spider-Verse", "genre": "Action", "year": 2018, "rating": 8.4, "x": 0.2498, "y": -0.6399}, {"id": 27, "title": "Mission: Impossible \u2014 Fallout", "genre": "Action", "year": 2018, "rating": 7.7, "x": 0.2077, "y": -0.3704}, {"id": 28, "title": "The Bourne Ultimatum", "genre": "Action", "year": 2007, "rating": 8.0, "x": 0.2317, "y": -0.703}, {"id": 29, "title": "Casino Royale", "genre": "Action", "year": 2006, "rating": 8.0, "x": 0.3047, "y": -0.6477}, {"id": 30, "title": "Everything Everywhere All at Once", "genre": "Action", "year": 2022, "rating": 7.8, "x": 0.2433, "y": -0.88}, {"id": 31, "title": "The Shawshank Redemption", "genre": "Drama", "year": 1994, "rating": 9.3, "x": 0.2262, "y": -0.0494}, {"id": 32, "title": "Good Will Hunting", "genre": "Drama", "year": 1997, "rating": 8.3, "x": 0.0488, "y": -0.157}, {"id": 33, "title": "The Godfather", "genre": "Drama", "year": 1972, "rating": 9.2, "x": 0.2706, "y": 0.102}, {"id": 34, "title": "The Prestige", "genre": "Drama", "year": 2006, "rating": 8.5, "x": 0.2394, "y": -0.3082}, {"id": 35, "title": "A Beautiful Mind", "genre": "Drama", "year": 2001, "rating": 8.2, "x": 0.2083, "y": -0.3763}, {"id": 36, "title": "12 Angry Men", "genre": "Drama", "year": 1957, "rating": 9.0, "x": 0.1849, "y": -0.3905}, {"id": 37, "title": "Prisoners", "genre": "Thriller", "year": 2013, "rating": 8.2, "x": -0.5983, "y": -0.0541}, {"id": 38, "title": "Gone Girl", "genre": "Thriller", "year": 2014, "rating": 8.1, "x": -0.4216, "y": 0.0845}, {"id": 39, "title": "Nightcrawler", "genre": "Thriller", "year": 2014, "rating": 7.8, "x": -0.3401, "y": -0.2174}, {"id": 40, "title": "No Country for Old Men", "genre": "Thriller", "year": 2007, "rating": 8.2, "x": -0.3661, "y": 0.0777}, {"id": 41, "title": "Sicario", "genre": "Thriller", "year": 2015, "rating": 7.7, "x": -0.6601, "y": 0.0086}, {"id": 42, "title": "The Silence of the Lambs", "genre": "Thriller", "year": 1991, "rating": 8.6, "x": -0.7169, "y": -0.1534}, {"id": 43, "title": "Memento", "genre": "Mystery", "year": 2000, "rating": 8.4, "x": -0.2498, "y": 0.2128}, {"id": 44, "title": "Glass Onion", "genre": "Mystery", "year": 2022, "rating": 7.1, "x": -0.2879, "y": 0.1049}, {"id": 45, "title": "Memories of Murder", "genre": "Mystery", "year": 2003, "rating": 8.1, "x": -0.1866, "y": 0.2488}, {"id": 46, "title": "Chinatown", "genre": "Mystery", "year": 1974, "rating": 8.1, "x": -0.054, "y": -0.0307}, {"id": 47, "title": "The Usual Suspects", "genre": "Mystery", "year": 1995, "rating": 8.5, "x": -0.2117, "y": 0.3153}, {"id": 48, "title": "L.A. Confidential", "genre": "Mystery", "year": 1997, "rating": 8.2, "x": -0.3183, "y": 0.2215}, {"id": 49, "title": "The Nice Guys", "genre": "Mystery", "year": 2016, "rating": 7.4, "x": -0.3776, "y": -0.0564}, {"id": 50, "title": "Catch Me If You Can", "genre": "Mystery", "year": 2002, "rating": 8.1, "x": -0.3594, "y": 0.1809}, {"id": 51, "title": "Groundhog Day", "genre": "Comedy", "year": 1993, "rating": 8.0, "x": 0.6567, "y": 0.4957}, {"id": 52, "title": "The Grand Budapest Hotel", "genre": "Comedy", "year": 2014, "rating": 8.1, "x": 0.5648, "y": 0.4741}, {"id": 53, "title": "Game Night", "genre": "Comedy", "year": 2018, "rating": 6.9, "x": 0.8396, "y": 0.0643}, {"id": 54, "title": "The Big Short", "genre": "Comedy", "year": 2015, "rating": 7.8, "x": 0.5895, "y": 0.4138}, {"id": 55, "title": "Palm Springs", "genre": "Comedy", "year": 2020, "rating": 7.4, "x": 0.5281, "y": 0.4144}, {"id": 56, "title": "Hot Fuzz", "genre": "Comedy", "year": 2007, "rating": 7.8, "x": 0.7081, "y": 0.4489}, {"id": 57, "title": "Shaun of the Dead", "genre": "Comedy", "year": 2004, "rating": 7.9, "x": 0.5695, "y": 0.5294}, {"id": 58, "title": "The Truman Show", "genre": "Comedy", "year": 1998, "rating": 8.2, "x": 0.4488, "y": 0.2271}, {"id": 59, "title": "Booksmart", "genre": "Comedy", "year": 2019, "rating": 7.1, "x": 0.4896, "y": 0.3003}, {"id": 60, "title": "21 Jump Street", "genre": "Comedy", "year": 2012, "rating": 7.2, "x": 0.6844, "y": 0.4682}], "benchmark": {"evaluated_users": 150, "HitRate@5": 0.86, "HitRate@10": 0.98, "Recall@10": 0.8211, "NDCG@5": 0.4238, "NDCG@10": 0.5365, "MRR@10": 0.5117, "P50_Latency_ms": 0.2634, "P95_Latency_ms": 0.8189, "model": "Two-Tower (FAISS_HNSW)", "backend": "faiss_hnsw"}};
+    const EMBEDDED_DATA = {"catalog": [{"id": 1, "title": "Interstellar", "genre": "Sci-Fi", "year": 2014, "rating": 8.7, "director": "Christopher Nolan", "tags": ["space", "relativity", "wormhole", "time", "survival"], "description": "Explorers travel through a wormhole in space to ensure humanity's survival beyond a dying Earth."}, {"id": 2, "title": "Inception", "genre": "Sci-Fi", "year": 2010, "rating": 8.8, "director": "Christopher Nolan", "tags": ["dreams", "subconscious", "heist", "mind-bending", "time"], "description": "A skilled extractor enters layered dream architectures to plant an idea inside a CEO's subconscious."}, {"id": 3, "title": "The Matrix", "genre": "Sci-Fi", "year": 1999, "rating": 8.7, "director": "Lana & Lilly Wachowski", "tags": ["cyberpunk", "simulation", "ai", "dystopia", "martial-arts"], "description": "A hacker discovers reality is a simulated construct managed by sentient machines."}, {"id": 4, "title": "Ex Machina", "genre": "Sci-Fi", "year": 2014, "rating": 7.7, "director": "Alex Garland", "tags": ["turing-test", "ai", "robotics", "ethics", "psychological"], "description": "A programmer evaluates the human-like consciousness of an advanced humanoid AI in isolation."}, {"id": 5, "title": "Blade Runner 2049", "genre": "Sci-Fi", "year": 2017, "rating": 8.0, "director": "Denis Villeneuve", "tags": ["cyberpunk", "replicant", "detective", "neon", "dystopia"], "description": "A bioengineered officer uncovers a buried secret capable of destabilizing society."}, {"id": 6, "title": "The Dark Knight", "genre": "Action", "year": 2008, "rating": 9.0, "director": "Christopher Nolan", "tags": ["batman", "joker", "vigilante", "chaos", "crime"], "description": "Gotham's vigilante confronts an agent of anarchy pushing the city's moral fabric to collapse."}, {"id": 7, "title": "Gladiator", "genre": "Action", "year": 2000, "rating": 8.5, "director": "Ridley Scott", "tags": ["rome", "warrior", "empire", "revenge", "arena"], "description": "A betrayed Roman general fights through the arena to avenge his family against a corrupt emperor."}, {"id": 8, "title": "Mad Max: Fury Road", "genre": "Action", "year": 2015, "rating": 8.1, "director": "George Miller", "tags": ["wasteland", "chase", "post-apocalyptic", "survival", "vehicular"], "description": "Across a desert wasteland, rebels flee a warlord in a relentless high-speed armored convoy chase."}, {"id": 9, "title": "John Wick", "genre": "Action", "year": 2014, "rating": 7.4, "director": "Chad Stahelski", "tags": ["assassin", "underworld", "martial-arts", "vengeance", "noir"], "description": "A retired hitman returns to a secretive assassin underworld seeking ruthless retribution."}, {"id": 10, "title": "Top Gun: Maverick", "genre": "Action", "year": 2022, "rating": 8.2, "director": "Joseph Kosinski", "tags": ["aviation", "pilot", "dogfight", "navy", "mission"], "description": "A veteran aviator trains elite graduates for an unprecedented high-G strike mission."}, {"id": 11, "title": "The Social Network", "genre": "Drama", "year": 2010, "rating": 7.8, "director": "David Fincher", "tags": ["facebook", "startup", "algorithm", "silicon-valley", "betrayal"], "description": "The rise of a dorm-room social platform sparks fierce legal battles among its co-founders."}, {"id": 12, "title": "Oppenheimer", "genre": "Drama", "year": 2023, "rating": 8.3, "director": "Christopher Nolan", "tags": ["physics", "atomic-bomb", "history", "quantum", "biography"], "description": "A theoretical physicist leads the Manhattan Project while facing political fallout in the atomic age."}, {"id": 13, "title": "Whiplash", "genre": "Drama", "year": 2014, "rating": 8.5, "director": "Damien Chazelle", "tags": ["jazz", "perfectionism", "drummer", "obsession", "mentor"], "description": "An ambitious conservatory drummer endures psychological pressure under an obsessive conductor."}, {"id": 14, "title": "Fight Club", "genre": "Drama", "year": 1999, "rating": 8.8, "director": "David Fincher", "tags": ["consumerism", "insomnia", "psychological", "anarchy", "twist"], "description": "An insomniac office worker forms an underground combat movement that spirals out of control."}, {"id": 15, "title": "Parasite", "genre": "Thriller", "year": 2019, "rating": 8.5, "director": "Bong Joon-ho", "tags": ["class-divide", "dark-comedy", "deception", "suspense", "family"], "description": "A struggling family infiltrates a wealthy household through calculated social engineering."}, {"id": 16, "title": "Se7en", "genre": "Thriller", "year": 1995, "rating": 8.6, "director": "David Fincher", "tags": ["detective", "serial-killer", "noir", "mystery", "crime"], "description": "Two homicide detectives hunt a methodical killer orchestrating murders around the seven deadly sins."}, {"id": 17, "title": "Shutter Island", "genre": "Thriller", "year": 2010, "rating": 8.2, "director": "Martin Scorsese", "tags": ["asylum", "twist", "psychological", "investigation", "detective"], "description": "A U.S. Marshal investigates a disappearance at a remote psychiatric fortress while questioning reality."}, {"id": 18, "title": "Zodiac", "genre": "Thriller", "year": 2007, "rating": 7.7, "director": "David Fincher", "tags": ["journalism", "unsolved", "code-breaking", "cryptogram", "crime"], "description": "Cartoonists and detectives become consumed by tracking a killer taunting newspapers with ciphers."}, {"id": 19, "title": "Knives Out", "genre": "Mystery", "year": 2019, "rating": 7.9, "director": "Rian Johnson", "tags": ["whodunnit", "inheritance", "detective", "mansion", "twist"], "description": "An eccentric private detective investigates the suspicious death of a wealthy crime novelist."}, {"id": 20, "title": "Superbad", "genre": "Comedy", "year": 2007, "rating": 7.6, "director": "Greg Mottola", "tags": ["high-school", "friendship", "party", "coming-of-age", "banter"], "description": "Two co-dependent seniors navigate chaotic misadventures on their last night before graduation."}, {"id": 21, "title": "Arrival", "genre": "Sci-Fi", "year": 2016, "rating": 7.9, "director": "Denis Villeneuve", "tags": ["linguistics", "aliens", "time", "communication", "mind-bending"], "description": "A linguist deciphers an alien visual language that alters her perception of linear time."}, {"id": 22, "title": "Dune: Part Two", "genre": "Sci-Fi", "year": 2024, "rating": 8.5, "director": "Denis Villeneuve", "tags": ["space", "empire", "desert", "prophecy", "warfare"], "description": "Paul Atreides unites with desert warriors to wage war against the conspirators who destroyed his house."}, {"id": 23, "title": "The Martian", "genre": "Sci-Fi", "year": 2015, "rating": 8.0, "director": "Ridley Scott", "tags": ["space", "survival", "engineering", "nasa", "physics"], "description": "A stranded botanist uses engineering ingenuity on Mars to survive until a rescue mission arrives."}, {"id": 24, "title": "Her", "genre": "Sci-Fi", "year": 2013, "rating": 8.0, "director": "Spike Jonze", "tags": ["ai", "ethics", "loneliness", "future", "psychology"], "description": "A quiet writer develops an emotional bond with an adaptive, self-evolving operating system."}, {"id": 25, "title": "Edge of Tomorrow", "genre": "Sci-Fi", "year": 2014, "rating": 7.9, "director": "Doug Liman", "tags": ["time", "loop", "aliens", "combat", "survival"], "description": "A soldier relives the same alien invasion battle repeatedly, refining combat skills each loop."}, {"id": 26, "title": "Spider-Man: Into the Spider-Verse", "genre": "Action", "year": 2018, "rating": 8.4, "director": "Bob Persichetti", "tags": ["multiverse", "vigilante", "neon", "animation", "teamwork"], "description": "Teenager Miles Morales teams up with alternate-dimension heroes to halt a collider threat."}, {"id": 27, "title": "Mission: Impossible \u2014 Fallout", "genre": "Action", "year": 2018, "rating": 7.7, "director": "Christopher McQuarrie", "tags": ["espionage", "chase", "stunts", "heist", "mission"], "description": "IMF agents race to recover stolen plutonium cores before an extremist syndicate detonates them."}, {"id": 28, "title": "The Bourne Ultimatum", "genre": "Action", "year": 2007, "rating": 8.0, "director": "Paul Greengrass", "tags": ["espionage", "assassin", "chase", "conspiracy", "memory"], "description": "A former black-ops operative uncovers the origins of his training while evading intelligence agencies."}, {"id": 29, "title": "Casino Royale", "genre": "Action", "year": 2006, "rating": 8.0, "director": "Martin Campbell", "tags": ["espionage", "poker", "heist", "agent", "vengeance"], "description": "After earning double-O status, James Bond enters a high-stakes poker game to bankrupt a financier."}, {"id": 30, "title": "Everything Everywhere All at Once", "genre": "Action", "year": 2022, "rating": 7.8, "director": "Daniel Kwan", "tags": ["multiverse", "martial-arts", "family", "mind-bending", "absurdist"], "description": "A laundromat owner channels skills across parallel universes to save existence from fracturing."}, {"id": 31, "title": "The Shawshank Redemption", "genre": "Drama", "year": 1994, "rating": 9.3, "director": "Frank Darabont", "tags": ["prison", "hope", "friendship", "redemption", "escape"], "description": "A wrongly convicted banker builds resilience and quiet escape plans over two decades in prison."}, {"id": 32, "title": "Good Will Hunting", "genre": "Drama", "year": 1997, "rating": 8.3, "director": "Gus Van Sant", "tags": ["mathematics", "mentor", "psychology", "genius", "friendship"], "description": "A self-taught janitor with mathematical brilliance confronts past trauma alongside an empathetic therapist."}, {"id": 33, "title": "The Godfather", "genre": "Drama", "year": 1972, "rating": 9.2, "director": "Francis Ford Coppola", "tags": ["mafia", "family", "empire", "betrayal", "crime"], "description": "An aging patriarch transfers control of his clandestine empire to his reluctant youngest son."}, {"id": 34, "title": "The Prestige", "genre": "Drama", "year": 2006, "rating": 8.5, "director": "Christopher Nolan", "tags": ["illusion", "obsession", "twist", "rivalry", "physics"], "description": "Two rival stage magicians engage in escalating sabotage to create the ultimate illusion."}, {"id": 35, "title": "A Beautiful Mind", "genre": "Drama", "year": 2001, "rating": 8.2, "director": "Ron Howard", "tags": ["mathematics", "game-theory", "biography", "psychological", "code-breaking"], "description": "Mathematician John Nash makes groundbreaking game-theory discoveries while battling schizophrenia."}, {"id": 36, "title": "12 Angry Men", "genre": "Drama", "year": 1957, "rating": 9.0, "director": "Sidney Lumet", "tags": ["courtroom", "jury", "psychology", "ethics", "investigation"], "description": "A lone dissenting juror forces eleven peers to examine their biases in a murder deliberation."}, {"id": 37, "title": "Prisoners", "genre": "Thriller", "year": 2013, "rating": 8.2, "director": "Denis Villeneuve", "tags": ["investigation", "detective", "suspense", "kidnapping", "noir"], "description": "A desperate father takes matters into his own hands as a methodical detective races to find missing children."}, {"id": 38, "title": "Gone Girl", "genre": "Thriller", "year": 2014, "rating": 8.1, "director": "David Fincher", "tags": ["deception", "psychological", "twist", "journalism", "suspense"], "description": "Media scrutiny turns fierce when a husband becomes the prime suspect in his wife's sudden disappearance."}, {"id": 39, "title": "Nightcrawler", "genre": "Thriller", "year": 2014, "rating": 7.8, "director": "Dan Gilroy", "tags": ["journalism", "neon", "ambition", "noir", "psychological"], "description": "A driven opportunist blurs ethical boundaries filming nocturnal crime scenes for local television news."}, {"id": 40, "title": "No Country for Old Men", "genre": "Thriller", "year": 2007, "rating": 8.2, "director": "Joel & Ethan Coen", "tags": ["chase", "cartel", "suspense", "crime", "survival"], "description": "A hunter stumbles upon cartel cash in the Texas desert, triggering a relentless pursuit by a hitman."}, {"id": 41, "title": "Sicario", "genre": "Thriller", "year": 2015, "rating": 7.7, "director": "Denis Villeneuve", "tags": ["cartel", "espionage", "operation", "ethics", "suspense"], "description": "An idealistic FBI agent joins a covert task force targeting cartel leadership along the border."}, {"id": 42, "title": "The Silence of the Lambs", "genre": "Thriller", "year": 1991, "rating": 8.6, "director": "Jonathan Demme", "tags": ["fbi", "serial-killer", "psychological", "investigation", "profiler"], "description": "An FBI trainee seeks behavioral insights from an imprisoned psychiatrist to catch an active killer."}, {"id": 43, "title": "Memento", "genre": "Mystery", "year": 2000, "rating": 8.4, "director": "Christopher Nolan", "tags": ["memory", "twist", "noir", "investigation", "revenge"], "description": "A man with anterograde amnesia uses Polaroids and tattoos to hunt his wife's murderer in reverse chronology."}, {"id": 44, "title": "Glass Onion", "genre": "Mystery", "year": 2022, "rating": 7.1, "director": "Rian Johnson", "tags": ["whodunnit", "detective", "silicon-valley", "island", "deception"], "description": "A tech billionaire's private-island murder-mystery game turns real under Detective Benoit Blanc's watch."}, {"id": 45, "title": "Memories of Murder", "genre": "Mystery", "year": 2003, "rating": 8.1, "director": "Bong Joon-ho", "tags": ["detective", "unsolved", "investigation", "noir", "crime"], "description": "Rural and Seoul detectives clash over forensic methods while hunting South Korea's first serial killer."}, {"id": 46, "title": "Chinatown", "genre": "Mystery", "year": 1974, "rating": 8.1, "director": "Roman Polanski", "tags": ["noir", "detective", "conspiracy", "corruption", "investigation"], "description": "A 1930s Los Angeles private eye uncovers systemic municipal water corruption behind a routine case."}, {"id": 47, "title": "The Usual Suspects", "genre": "Mystery", "year": 1995, "rating": 8.5, "director": "Bryan Singer", "tags": ["heist", "twist", "deception", "crime", "interrogation"], "description": "A sole survivor narrates an intricate lineup heist orchestrated by a mythical underworld figure."}, {"id": 48, "title": "L.A. Confidential", "genre": "Mystery", "year": 1997, "rating": 8.2, "director": "Curtis Hanson", "tags": ["noir", "detective", "corruption", "crime", "journalism"], "description": "Three contrasting LAPD detectives investigate a diner massacre tied to police corruption."}, {"id": 49, "title": "The Nice Guys", "genre": "Mystery", "year": 2016, "rating": 7.4, "director": "Shane Black", "tags": ["detective", "buddy-cop", "conspiracy", "noir", "banter"], "description": "A bumbling private eye and an enforcer team up in 1977 Los Angeles to track a missing woman."}, {"id": 50, "title": "Catch Me If You Can", "genre": "Mystery", "year": 2002, "rating": 8.1, "director": "Steven Spielberg", "tags": ["fbi", "con-artist", "deception", "aviation", "chase"], "description": "An FBI fraud agent spends years chasing a charismatic young impostor forging millions in checks."}, {"id": 51, "title": "Groundhog Day", "genre": "Comedy", "year": 1993, "rating": 8.0, "director": "Harold Ramis", "tags": ["time", "loop", "satire", "redemption", "philosophy"], "description": "A cynical weather forecaster relives February 2nd indefinitely until he learns genuine empathy."}, {"id": 52, "title": "The Grand Budapest Hotel", "genre": "Comedy", "year": 2014, "rating": 8.1, "director": "Wes Anderson", "tags": ["heist", "quirky", "hotel", "inheritance", "capers"], "description": "A devoted concierge and his lobby boy become entangled in the theft of a priceless Renaissance painting."}, {"id": 53, "title": "Game Night", "genre": "Comedy", "year": 2018, "rating": 6.9, "director": "John Francis Daley", "tags": ["friendship", "party", "mystery", "twist", "banter"], "description": "A group of competitive friends find their weekly murder-mystery party turns into a real kidnapping."}, {"id": 54, "title": "The Big Short", "genre": "Comedy", "year": 2015, "rating": 7.8, "director": "Adam McKay", "tags": ["finance", "satire", "algorithm", "crisis", "investigation"], "description": "Contrarian investors uncover the 2007 housing bubble and bet against Wall Street's systemic collapse."}, {"id": 55, "title": "Palm Springs", "genre": "Comedy", "year": 2020, "rating": 7.4, "director": "Max Barbakow", "tags": ["time", "loop", "wedding", "philosophy", "banter"], "description": "Two wedding guests get trapped in a quantum time loop together in the California desert."}, {"id": 56, "title": "Hot Fuzz", "genre": "Comedy", "year": 2007, "rating": 7.8, "director": "Edgar Wright", "tags": ["buddy-cop", "satire", "mystery", "action", "detective"], "description": "An overachieving London constable is reassigned to a sleepy village hiding a bizarre conspiracy."}, {"id": 57, "title": "Shaun of the Dead", "genre": "Comedy", "year": 2004, "rating": 7.9, "director": "Edgar Wright", "tags": ["friendship", "survival", "satire", "banter", "apocalypse"], "description": "An aimless electronics salesman tries to win back his ex while surviving a sudden zombie outbreak."}, {"id": 58, "title": "The Truman Show", "genre": "Comedy", "year": 1998, "rating": 8.2, "director": "Peter Weir", "tags": ["simulation", "satire", "media", "philosophy", "escape"], "description": "An insurance salesman begins noticing cracks in an entire town built secretly around his life."}, {"id": 59, "title": "Booksmart", "genre": "Comedy", "year": 2019, "rating": 7.1, "director": "Olivia Wilde", "tags": ["high-school", "friendship", "party", "coming-of-age", "banter"], "description": "Two academic overachievers pack four years of missed fun into a single night before graduation."}, {"id": 60, "title": "21 Jump Street", "genre": "Comedy", "year": 2012, "rating": 7.2, "director": "Phil Lord", "tags": ["buddy-cop", "high-school", "undercover", "banter", "action"], "description": "Two mismatched rookie cops go undercover as high school students to bust a synthetic drug ring."}], "users": [{"user_id": 0, "username": "user_001", "primary_genre": "Sci-Fi", "preferred_tags": ["time", "survival", "space"], "history_count": 5, "history_item_ids": [24, 6, 1, 2, 3]}, {"user_id": 1, "username": "user_002", "primary_genre": "Action", "preferred_tags": ["assassin", "chase", "espionage"], "history_count": 6, "history_item_ids": [29, 7, 26, 8, 30, 27]}, {"user_id": 2, "username": "user_003", "primary_genre": "Drama", "preferred_tags": ["obsession", "biography", "betrayal"], "history_count": 7, "history_item_ids": [11, 36, 35, 13, 33, 31, 12]}, {"user_id": 3, "username": "user_004", "primary_genre": "Thriller", "preferred_tags": ["psychological", "noir", "detective"], "history_count": 7, "history_item_ids": [33, 16, 37, 17, 41, 42, 38]}, {"user_id": 4, "username": "user_005", "primary_genre": "Mystery", "preferred_tags": ["twist", "detective", "investigation"], "history_count": 6, "history_item_ids": [48, 19, 45, 18, 44, 43]}, {"user_id": 5, "username": "user_006", "primary_genre": "Comedy", "preferred_tags": ["high-school", "banter", "friendship"], "history_count": 4, "history_item_ids": [27, 56, 51, 53]}, {"user_id": 6, "username": "user_007", "primary_genre": "Comedy", "preferred_tags": ["friendship", "high-school", "satire"], "history_count": 5, "history_item_ids": [57, 56, 55, 52, 24]}, {"user_id": 7, "username": "user_008", "primary_genre": "Comedy", "preferred_tags": ["satire", "banter", "high-school"], "history_count": 7, "history_item_ids": [47, 46, 56, 43, 59, 57, 58]}, {"user_id": 8, "username": "user_009", "primary_genre": "Action", "preferred_tags": ["espionage", "assassin", "vigilante"], "history_count": 7, "history_item_ids": [8, 10, 49, 27, 9, 19, 26]}, {"user_id": 9, "username": "user_010", "primary_genre": "Sci-Fi", "preferred_tags": ["time", "ai", "survival"], "history_count": 5, "history_item_ids": [2, 3, 9, 24, 21]}, {"user_id": 10, "username": "user_011", "primary_genre": "Thriller", "preferred_tags": ["suspense", "noir", "psychological"], "history_count": 7, "history_item_ids": [39, 27, 42, 37, 26, 38, 40]}, {"user_id": 11, "username": "user_012", "primary_genre": "Action", "preferred_tags": ["assassin", "chase", "vigilante"], "history_count": 8, "history_item_ids": [26, 40, 18, 28, 39, 9, 29, 7]}, {"user_id": 12, "username": "user_013", "primary_genre": "Action", "preferred_tags": ["vigilante", "chase", "assassin"], "history_count": 6, "history_item_ids": [29, 35, 6, 13, 9, 26]}, {"user_id": 13, "username": "user_014", "primary_genre": "Comedy", "preferred_tags": ["high-school", "banter", "friendship"], "history_count": 6, "history_item_ids": [9, 26, 58, 56, 55, 52]}, {"user_id": 14, "username": "user_015", "primary_genre": "Sci-Fi", "preferred_tags": ["time", "ai", "survival"], "history_count": 6, "history_item_ids": [4, 21, 23, 24, 50, 22]}, {"user_id": 15, "username": "user_016", "primary_genre": "Comedy", "preferred_tags": ["satire", "high-school", "banter"], "history_count": 6, "history_item_ids": [4, 58, 54, 60, 25, 57]}, {"user_id": 16, "username": "user_017", "primary_genre": "Drama", "preferred_tags": ["betrayal", "physics", "obsession"], "history_count": 6, "history_item_ids": [31, 35, 11, 33, 36, 34]}, {"user_id": 17, "username": "user_018", "primary_genre": "Sci-Fi", "preferred_tags": ["survival", "time", "space"], "history_count": 7, "history_item_ids": [5, 17, 2, 4, 22, 18, 21]}, {"user_id": 18, "username": "user_019", "primary_genre": "Drama", "preferred_tags": ["betrayal", "physics", "obsession"], "history_count": 7, "history_item_ids": [13, 12, 9, 14, 32, 35, 11]}, {"user_id": 19, "username": "user_020", "primary_genre": "Comedy", "preferred_tags": ["friendship", "banter", "high-school"], "history_count": 6, "history_item_ids": [20, 51, 59, 47, 60, 52]}, {"user_id": 20, "username": "user_021", "primary_genre": "Drama", "preferred_tags": ["obsession", "betrayal", "biography"], "history_count": 7, "history_item_ids": [35, 34, 13, 32, 22, 11, 31]}, {"user_id": 21, "username": "user_022", "primary_genre": "Comedy", "preferred_tags": ["friendship", "satire", "banter"], "history_count": 7, "history_item_ids": [53, 51, 59, 60, 28, 56, 55]}, {"user_id": 22, "username": "user_023", "primary_genre": "Comedy", "preferred_tags": ["satire", "banter", "friendship"], "history_count": 4, "history_item_ids": [36, 60, 59, 57]}, {"user_id": 23, "username": "user_024", "primary_genre": "Action", "preferred_tags": ["chase", "espionage", "assassin"], "history_count": 7, "history_item_ids": [6, 3, 7, 10, 23, 30, 25]}], "user_embeddings": {"0": [0.0194, 0.1137, 0.2657, 0.2783, 0.0645, -0.01, -0.0255, -0.1176, -0.0744, -0.1995, 0.0347, -0.0418, -0.2859, -0.0919, 0.2006, -0.1415, -0.0599, 0.181, 0.2207, 0.0479, 0.5296, 0.0684, 0.0456, 0.1635, -0.3405, 0.1092, 0.0318, -0.0639, -0.2672, 0.0942, 0.0803, 0.0102], "1": [0.0613, 0.0948, 0.0569, 0.0403, 0.0389, -0.1103, 0.0076, -0.3222, 0.0375, -0.294, -0.0458, 0.1331, 0.0361, -0.1547, 0.098, -0.0194, -0.0523, 0.3621, 0.3633, 0.0759, 0.1266, 0.3088, 0.3594, 0.1676, 0.0065, -0.0094, 0.2855, -0.1211, -0.166, -0.1559, 0.021, 0.1819], "2": [0.3122, -0.0737, 0.2077, -0.0574, 0.32, -0.0213, 0.0013, -0.1343, -0.1779, -0.4455, -0.2898, 0.1163, -0.2562, -0.1248, -0.057, -0.0784, -0.0907, 0.2431, 0.292, 0.0053, 0.1539, 0.0148, 0.2431, 0.0222, 0.1031, 0.0658, 0.1734, 0.0503, 0.0813, 0.0668, -0.0993, -0.0835], "3": [0.2364, -0.3932, 0.1998, -0.0531, -0.0676, -0.1672, 0.0576, -0.3062, 0.0822, -0.2722, -0.152, -0.1495, -0.0734, -0.1357, -0.3282, 0.011, 0.0217, 0.1792, 0.1776, -0.0766, 0.0869, 0.1737, 0.0597, -0.0179, -0.0137, -0.1778, 0.1642, 0.1045, 0.1249, 0.2045, -0.2685, -0.2201], "4": [0.168, -0.0088, 0.066, 0.0496, -0.3037, 0.1902, 0.0348, -0.2535, -0.1692, -0.356, -0.0357, -0.2228, -0.1535, -0.1125, -0.0343, 0.149, -0.2719, 0.1228, 0.132, 0.137, 0.1982, 0.1928, 0.0466, 0.0503, 0.1627, 0.0314, 0.2202, 0.1271, 0.0332, 0.2249, -0.0392, 0.3917], "5": [0.0799, -0.1753, -0.0009, -0.0268, -0.0398, -0.1324, 0.0822, -0.0633, 0.0383, -0.2416, -0.0601, 0.1015, 0.1631, -0.0423, 0.1318, 0.1789, 0.0455, 0.5265, 0.0787, 0.0134, 0.1338, 0.4089, 0.2576, 0.0519, 0.2626, 0.0087, 0.2537, 0.0207, -0.2832, -0.1591, 0.0289, -0.0295], "6": [-0.0666, -0.2432, 0.2583, -0.1416, -0.1683, -0.0771, 0.0136, -0.1742, -0.0353, -0.1109, 0.0189, -0.0855, -0.001, -0.0069, 0.2032, 0.1526, -0.0795, 0.4663, 0.0218, -0.1513, 0.3484, 0.3153, 0.0668, -0.1543, 0.2977, 0.0457, 0.1148, -0.0087, -0.1332, 0.0926, -0.0995, -0.2504], "7": [-0.0645, -0.0575, 0.2437, -0.0823, -0.1768, 0.0983, -0.0147, -0.0784, -0.0741, -0.2854, 0.1116, 0.0718, 0.067, -0.1317, 0.208, -0.0118, 0.0361, 0.4151, -0.0936, -0.0361, 0.3778, 0.4366, 0.1391, -0.102, 0.2738, -0.1247, 0.1628, 0.111, -0.1047, 0.0592, 0.1188, 0.0684], "8": [-0.05, 0.2148, 0.1573, -0.0033, -0.1053, -0.0085, -0.0207, -0.4062, -0.0682, -0.2718, 0.0527, -0.0293, -0.1536, -0.1342, 0.138, -0.0666, -0.1293, 0.2396, 0.1932, 0.186, 0.2609, 0.1992, 0.1778, 0.328, -0.0201, 0.1814, 0.3056, -0.1638, -0.1342, -0.0877, 0.0348, 0.1713], "9": [-0.0073, 0.0023, 0.3203, -0.0076, -0.0953, -0.0853, 0.0272, -0.2179, -0.0879, -0.1649, 0.0629, -0.0448, -0.3653, -0.1618, 0.0922, 0.025, 0.1131, 0.3608, 0.1676, -0.0536, 0.3319, 0.2104, 0.0907, 0.2878, -0.1182, 0.1784, 0.126, -0.3459, -0.1381, 0.0088, 0.0377, -0.0426], "10": [0.1768, -0.0713, 0.05, 0.1242, -0.056, -0.1009, -0.0436, -0.2902, 0.2254, -0.2304, -0.0123, -0.1874, -0.0884, -0.077, -0.0608, 0.0628, -0.0441, 0.2918, 0.1137, -0.1108, 0.1614, 0.4908, -0.0308, -0.0127, -0.1352, -0.0322, 0.2933, -0.1132, -0.2726, -0.1279, -0.3059, 0.0551], "11": [-0.0447, -0.036, 0.0322, 0.105, -0.1387, -0.1008, 0.1288, -0.2406, 0.1745, -0.2811, -0.0838, -0.0576, -0.098, -0.0656, 0.018, 0.0959, -0.0893, 0.2165, 0.1494, -0.0965, -0.0137, 0.4745, 0.0733, 0.2163, 0.0121, -0.1695, 0.4279, -0.2626, -0.1769, -0.1193, -0.0973, 0.1938], "12": [-0.0559, 0.1314, 0.2325, -0.0058, 0.2325, 0.0213, 0.0905, -0.103, -0.1449, -0.1936, -0.2287, 0.3293, -0.1745, -0.1434, 0.1148, -0.2485, 0.0145, 0.3172, 0.2394, 0.0669, 0.0098, 0.3265, 0.2467, 0.0856, 0.0236, 0.032, 0.1857, -0.2737, -0.1097, -0.0965, 0.1873, -0.046], "13": [-0.1304, -0.1445, 0.1833, -0.0164, -0.0049, -0.0502, -0.0698, -0.1308, 0.1577, -0.0327, -0.0496, 0.0887, 0.0102, -0.0714, 0.1639, 0.139, 0.1542, 0.4226, 0.0636, -0.0652, -0.0111, 0.5205, 0.1798, 0.1555, 0.1371, 0.0932, 0.1243, -0.3316, -0.2166, -0.2276, 0.107, -0.1215], "14": [-0.1102, 0.0119, 0.4015, -0.0685, -0.0355, -0.1438, 0.1753, -0.3212, -0.1388, -0.1586, 0.1273, -0.0581, -0.3265, -0.136, 0.0965, -0.1554, 0.0517, 0.3244, 0.1982, -0.0265, 0.3551, 0.0049, 0.1146, 0.2091, 0.0387, 0.1423, 0.112, -0.0422, 0.0202, 0.1573, 0.0245, -0.2252], "15": [-0.1229, -0.0965, 0.3717, -0.0879, -0.0177, -0.0214, 0.1215, 0.0473, -0.0862, -0.2152, -0.0562, 0.182, -0.0329, -0.1419, 0.3572, 0.0698, 0.0521, 0.5171, 0.0992, -0.1327, 0.3157, 0.3084, 0.1312, 0.012, 0.1054, 0.0098, 0.0727, 0.0348, -0.1046, 0.0349, 0.0785, -0.1497], "16": [0.207, -0.0914, 0.2198, -0.0627, 0.2275, -0.0847, 0.1725, -0.0925, -0.1252, -0.3549, -0.2851, 0.1903, -0.1075, -0.0844, 0.0061, -0.1162, -0.0068, 0.332, 0.3832, 0.0087, 0.1474, 0.0565, 0.2953, 0.118, 0.1194, -0.0692, 0.2839, 0.066, 0.0985, 0.0208, -0.1004, -0.0214], "17": [-0.1667, -0.107, 0.3866, 0.0474, -0.1319, -0.0033, 0.1255, -0.2365, 0.0178, -0.124, -0.0727, -0.202, -0.2147, -0.0825, 0.0272, 0.0731, -0.0452, 0.3133, 0.3852, -0.2347, 0.2287, 0.2627, 0.0252, 0.0805, -0.0544, -0.1776, 0.0984, -0.0211, 0.1085, 0.2632, -0.1912, -0.0694], "18": [0.1419, -0.1057, 0.2485, -0.0065, 0.1055, 0.094, -0.0135, -0.1287, -0.1918, -0.4864, -0.3182, 0.2509, -0.2847, -0.1504, 0.008, 0.0562, -0.1391, 0.2965, 0.1184, 0.0051, 0.1072, 0.2269, 0.1657, 0.1351, 0.0763, -0.0302, 0.2553, -0.0708, 0.1201, -0.0422, 0.0512, -0.0039], "19": [-0.0299, -0.1911, 0.0606, -0.221, -0.1793, -0.1424, 0.0286, -0.3488, -0.0515, -0.1941, 0.1562, -0.043, 0.0796, -0.1502, 0.1048, 0.078, -0.0436, 0.4085, 0.0315, 0.018, 0.1893, 0.3105, 0.2378, -0.0195, 0.3932, 0.0433, 0.108, 0.1082, -0.0629, 0.0856, 0.1251, -0.2379], "20": [0.2091, -0.1217, 0.291, -0.0133, 0.3128, -0.06, -0.0126, -0.0224, -0.1613, -0.3614, -0.2696, 0.2084, -0.2136, -0.09, 0.0271, -0.1192, -0.0214, 0.3032, 0.383, -0.1362, 0.1336, 0.1109, 0.2514, -0.0066, 0.0623, 0.1095, 0.085, -0.071, 0.1108, -0.0588, -0.0894, -0.1009], "21": [-0.2304, -0.0491, -0.0386, -0.0747, -0.0604, -0.128, -0.0475, -0.1666, 0.2793, 0.0621, -0.0446, 0.0643, 0.1632, 0.0385, 0.1439, 0.1366, 0.0556, 0.4178, 0.0144, 0.0106, 0.0323, 0.5438, 0.219, -0.0134, 0.2237, -0.0778, 0.0948, -0.1585, -0.2841, -0.1953, -0.0011, -0.0044], "22": [0.0734, -0.1311, 0.1334, -0.065, 0.0601, -0.0705, -0.0486, -0.0181, -0.1223, -0.1045, -0.3236, 0.0197, 0.1954, 0.0036, 0.1711, 0.2598, -0.1456, 0.5522, 0.1511, 0.0321, 0.1105, 0.3314, 0.1511, -0.1173, 0.2702, 0.0818, 0.0688, 0.0512, -0.1854, -0.0166, -0.1684, -0.1396], "23": [-0.1371, 0.034, 0.4172, 0.1074, 0.0875, 0.1358, -0.0139, -0.0591, -0.0969, -0.053, -0.1928, 0.1774, -0.2201, -0.1499, 0.2034, -0.1196, -0.0934, 0.179, 0.3411, -0.0865, 0.1032, 0.1769, 0.2043, 0.275, -0.3501, 0.0524, 0.174, -0.2226, 0.0291, -0.1212, -0.0605, -0.0944]}, "item_embeddings": {"1": [0.0618, 0.1153, 0.2853, 0.0634, -0.2194, 0.2013, -0.2301, 0.0337, -0.1214, -0.01, 0.0844, -0.192, -0.2001, 0.206, 0.1018, 0.1459, -0.1158, 0.0937, 0.1205, -0.2172, 0.2622, 0.1068, -0.2471, 0.2115, -0.3119, 0.2828, -0.225, -0.1502, 0.1004, 0.1548, -0.065, -0.1525], "2": [-0.0189, 0.2214, 0.2697, -0.0912, -0.2237, 0.0948, -0.0692, 0.0011, -0.1577, -0.0208, 0.1281, -0.1787, -0.2329, 0.2423, 0.1247, 0.0531, -0.0316, 0.187, 0.1254, -0.2584, 0.2898, 0.103, -0.2467, 0.2541, -0.2821, 0.2732, -0.1779, -0.1118, 0.0613, 0.187, -0.0764, -0.139], "3": [0.2558, 0.2039, 0.2859, 0.0447, -0.1216, 0.0823, -0.1305, -0.0103, -0.055, -0.1397, 0.0082, -0.0197, -0.2101, 0.254, -0.0195, -0.0569, -0.108, 0.1944, 0.1947, -0.2902, 0.2153, 0.1655, -0.2325, 0.1622, -0.3843, 0.1836, -0.1948, -0.1258, 0.0569, 0.1229, -0.1648, -0.1704], "4": [0.0688, 0.2595, 0.2964, -0.1833, -0.0826, 0.013, 0.1219, 0.0426, -0.1238, -0.0591, 0.0223, 0.033, -0.1499, 0.3544, 0.1583, -0.1535, -0.0646, 0.3251, 0.2325, -0.3329, 0.1858, 0.1107, -0.1041, 0.1134, -0.1253, 0.2284, -0.2075, -0.0501, 0.0602, 0.1811, -0.0539, -0.2603], "5": [-0.0668, 0.1319, 0.3251, 0.0422, -0.2768, 0.2097, -0.1655, 0.0064, -0.0605, 0.0037, 0.0126, -0.1092, -0.1502, 0.2605, 0.1436, 0.1325, -0.1048, 0.1659, 0.2088, -0.3193, 0.2141, 0.1378, -0.2039, 0.1619, -0.2669, 0.193, -0.2257, -0.1573, 0.1701, 0.1094, -0.1376, -0.1328], "6": [-0.0413, 0.323, 0.1439, 0.3028, 0.0703, 0.022, -0.0147, 0.071, -0.0524, -0.1924, 0.1118, 0.33, 0.0786, 0.2125, 0.0522, -0.1346, 0.0152, 0.1, 0.2191, -0.1245, 0.0109, 0.2318, -0.0138, 0.1764, -0.3364, 0.0194, 0.1043, -0.2783, -0.2733, -0.1414, 0.1777, 0.2248], "7": [0.0863, 0.3228, 0.0633, 0.1151, -0.1123, 0.135, 0.034, 0.1143, 0.0533, -0.0381, -0.0174, 0.1147, 0.0279, 0.2409, 0.0568, 0.0654, 0.082, 0.1185, 0.2736, -0.1642, -0.0303, 0.2287, 0.2438, 0.3805, -0.2919, 0.0521, 0.1007, -0.1561, -0.0379, -0.2149, 0.0282, 0.4372], "8": [0.1313, 0.4398, -0.0479, 0.0476, -0.088, 0.0868, -0.0771, -0.0826, 0.0291, -0.1278, -0.0673, 0.1822, 0.1595, 0.267, 0.1474, 0.0302, -0.0943, 0.1588, 0.1648, -0.0839, -0.0226, 0.1972, 0.2095, 0.2135, -0.0449, 0.253, 0.0611, -0.2529, -0.1969, -0.2532, -0.0376, 0.3837], "9": [0.0093, 0.3537, 0.2276, -0.0007, -0.1202, 0.071, -0.0271, -0.0343, -0.0857, -0.2345, 0.0013, 0.2688, -0.0358, 0.2052, 0.0403, 0.0961, 0.0773, 0.2084, -0.0354, -0.1877, -0.1264, 0.2367, -0.0157, 0.3097, -0.1599, 0.1256, 0.1377, -0.4006, -0.0871, -0.1489, 0.1789, 0.276], "10": [0.0066, 0.343, 0.1006, 0.2075, -0.183, 0.1873, 0.0275, -0.0086, 0.0296, -0.1853, -0.0182, 0.2301, 0.1064, 0.1988, 0.0445, -0.0618, -0.1067, -0.0206, 0.3451, 0.0058, -0.0189, -0.0385, 0.0953, 0.4135, -0.4113, 0.023, 0.2113, -0.1267, -0.0609, -0.0738, 0.1468, 0.2016], "11": [0.3193, 0.0956, 0.1425, -0.2116, 0.0752, 0.0189, 0.1873, -0.1607, -0.3909, -0.2088, -0.2806, 0.2172, -0.1985, 0.2926, -0.2118, -0.0972, -0.0921, 0.2358, 0.1174, -0.1663, -0.2143, 0.0684, -0.0805, 0.0863, 0.0794, 0.0581, -0.0548, 0.0859, 0.1142, 0.1704, -0.0043, -0.1519], "12": [0.3414, 0.1385, 0.1675, -0.2582, -0.0401, 0.0651, 0.1015, -0.1417, -0.3693, -0.1837, -0.3198, -0.0001, -0.0924, 0.2676, -0.2087, 0.1003, -0.0136, 0.232, 0.1656, -0.1412, -0.1852, 0.0042, 0.0002, 0.3318, 0.0314, 0.0708, -0.0367, 0.0797, 0.2003, 0.1411, -0.0537, -0.069], "13": [0.1537, 0.2032, 0.2023, -0.133, 0.1656, 0.1942, 0.0499, -0.061, -0.444, -0.2671, -0.4056, 0.2803, 0.0047, 0.316, -0.0187, 0.0243, -0.1566, 0.1736, 0.1713, -0.0719, -0.1783, 0.0738, 0.0224, -0.0306, 0.1212, 0.1119, -0.1313, 0.0512, 0.016, 0.0496, 0.1214, -0.0192], "14": [0.1922, 0.0948, 0.0969, -0.0908, 0.0662, -0.0583, 0.2662, 0.0115, -0.2403, -0.0605, -0.5325, 0.2421, -0.0977, 0.3755, -0.1305, 0.222, -0.1003, 0.3426, -0.0049, 0.0343, -0.1635, 0.0635, -0.0901, 0.152, 0.0436, -0.006, 0.038, 0.0025, 0.0555, -0.1403, -0.1373, -0.0397], "15": [0.1465, 0.0623, 0.0253, 0.1467, -0.4108, -0.142, 0.0977, -0.2959, 0.0639, -0.227, 0.1826, -0.0244, -0.1446, 0.2903, -0.2898, -0.0304, -0.0588, 0.062, -0.0815, -0.1587, -0.1292, 0.2707, -0.285, 0.1254, -0.1563, -0.2355, 0.058, -0.0783, -0.1721, 0.1859, 0.0533, -0.0658], "16": [0.3405, -0.0923, -0.0327, 0.1251, -0.2739, -0.2039, -0.0343, -0.2781, 0.0852, -0.1551, 0.0706, -0.0261, -0.1195, 0.1768, -0.3493, 0.0238, -0.1313, 0.0781, 0.0138, -0.2834, -0.2249, 0.1858, -0.2745, 0.0256, 0.0293, -0.0626, -0.0589, -0.2622, 0.0218, 0.2351, -0.0517, -0.2411], "17": [0.1761, 0.038, 0.1536, 0.0931, -0.3325, -0.0127, 0.0938, -0.3014, 0.0255, -0.1425, -0.0911, -0.1938, -0.0631, 0.339, -0.2471, 0.044, -0.1996, 0.063, 0.1205, -0.1949, -0.1204, 0.1024, -0.3538, 0.0673, -0.152, -0.2839, 0.1437, 0.0677, -0.0268, 0.1918, -0.2319, -0.0712], "18": [0.0942, -0.0167, 0.035, 0.1038, -0.4664, 0.1218, -0.0109, -0.0965, -0.0166, -0.2229, -0.1231, -0.0314, 0.0466, 0.3512, -0.1486, 0.1862, -0.2428, 0.1284, 0.0951, -0.2489, -0.0572, 0.3077, -0.1728, -0.0215, -0.1217, -0.3497, 0.1738, 0.12, 0.0153, 0.1072, -0.099, 0.1038], "19": [0.2577, 0.3827, 0.1978, -0.0613, -0.2393, 0.1757, 0.0315, -0.3019, -0.4066, -0.2876, 0.044, 0.127, -0.1238, 0.248, 0.0426, 0.0131, -0.24, 0.017, -0.1341, -0.0193, 0.1516, 0.0808, -0.1935, 0.0667, 0.065, 0.0993, 0.0022, 0.0809, -0.1857, 0.082, 0.0568, 0.0796], "20": [0.245, 0.0928, 0.1052, -0.235, -0.1725, -0.061, 0.0764, -0.13, -0.0912, -0.1889, 0.2271, 0.127, 0.2121, 0.3316, -0.0548, -0.0838, 0.1313, 0.3494, 0.034, -0.3634, -0.0983, 0.237, 0.0743, -0.0417, 0.2831, 0.0357, -0.1436, 0.0884, 0.0682, 0.1616, 0.1295, -0.171], "21": [-0.0922, 0.1384, 0.4892, -0.1392, -0.196, 0.0557, -0.0101, -0.055, -0.0421, 0.0104, 0.2289, -0.0571, -0.0535, 0.2747, 0.0969, 0.0322, 0.0579, 0.1979, 0.0551, -0.2584, 0.172, 0.1422, -0.225, 0.2116, -0.2649, 0.2421, -0.1124, -0.0967, 0.0843, 0.1248, -0.0559, -0.2977], "22": [0.0968, 0.1323, 0.4028, -0.0403, -0.0569, 0.164, -0.1074, 0.1043, -0.2668, -0.1419, 0.0266, 0.0354, -0.1849, 0.3103, 0.1267, 0.0472, -0.0414, 0.1963, 0.1649, -0.3134, 0.2098, 0.09, -0.2099, 0.1502, -0.2515, 0.2097, -0.1941, -0.0226, 0.1321, 0.1731, 0.0055, -0.1935], "23": [0.0003, 0.1824, 0.3944, -0.1776, -0.071, 0.1378, -0.0449, 0.0182, -0.1954, 0.0547, 0.0905, -0.0195, -0.1799, 0.2663, 0.1541, -0.0377, -0.0668, 0.2262, 0.1758, -0.2936, 0.1699, 0.073, -0.1394, 0.1657, -0.2273, 0.3478, -0.1704, -0.0428, 0.1765, 0.1041, -0.0906, -0.26], "24": [0.069, 0.2595, 0.3372, -0.1835, -0.0277, 0.0312, 0.0858, 0.0447, -0.1772, -0.1174, 0.1063, -0.0327, -0.0802, 0.3426, 0.1249, -0.103, -0.043, 0.307, 0.1497, -0.2369, 0.2583, 0.0572, -0.1259, 0.1401, -0.233, 0.2441, -0.1838, 0.0584, 0.0047, 0.2368, 0.0024, -0.2731], "25": [-0.0515, 0.1366, 0.467, -0.1195, -0.118, 0.2079, -0.0098, 0.0875, -0.2325, -0.0056, -0.0249, 0.0326, -0.0054, 0.3005, 0.2279, 0.1102, -0.11, 0.3027, 0.1522, -0.3193, 0.1233, 0.1354, -0.106, 0.0539, -0.1227, 0.2128, -0.1656, 0.0247, 0.1929, 0.1229, -0.0287, -0.2307], "26": [0.1362, 0.314, 0.0822, 0.0938, 0.0416, -0.0414, -0.1237, -0.0322, 0.0127, -0.1991, -0.0341, 0.1532, 0.0549, 0.29, -0.0047, 0.0767, 0.0852, 0.278, 0.1343, -0.2241, -0.1315, 0.325, 0.0198, 0.2717, -0.2643, 0.1543, 0.052, -0.362, -0.1721, -0.1842, -0.0014, 0.2217], "27": [0.2563, 0.4175, 0.0191, 0.0441, -0.0354, -0.0953, -0.0468, -0.1235, 0.0136, -0.1856, 0.1512, 0.085, 0.1291, 0.3563, 0.0734, 0.0349, 0.0331, 0.3459, 0.1617, -0.1614, 0.0339, 0.2456, -0.0044, 0.1955, -0.1317, 0.312, 0.0638, -0.1206, -0.2601, -0.1075, -0.0445, 0.1667], "28": [-0.1144, 0.2787, 0.0922, 0.036, -0.2126, -0.0369, -0.1239, -0.0481, 0.1188, -0.1562, -0.0314, 0.2403, 0.2141, 0.2217, -0.1083, 0.0077, 0.0448, 0.1224, 0.0113, 0.0212, -0.3473, 0.3972, -0.0107, 0.2092, -0.2161, -0.1886, 0.2012, -0.2349, -0.1254, -0.1187, 0.1093, 0.2679], "29": [0.0472, 0.3527, 0.1002, 0.1571, 0.0115, -0.1017, -0.0648, -0.0535, 0.0084, -0.3077, 0.0828, 0.2803, 0.1968, 0.2532, -0.0647, -0.0869, 0.0616, 0.2497, 0.1535, -0.2046, -0.1849, 0.3256, -0.012, 0.1273, -0.1929, 0.0317, 0.1421, -0.2304, -0.2172, -0.0711, 0.1364, 0.2363], "30": [-0.0315, 0.3614, 0.0939, 0.1841, -0.0891, 0.0079, -0.052, 0.0312, -0.0671, -0.2258, -0.0382, 0.3623, 0.0996, 0.145, 0.0608, 0.1007, -0.0596, 0.1134, 0.0721, -0.0123, -0.0716, 0.2245, -0.0145, 0.1704, -0.2651, 0.017, 0.1023, -0.3288, -0.1767, -0.2699, 0.1798, 0.3859], "31": [0.3774, 0.0917, 0.0893, -0.332, 0.1984, -0.0326, 0.0245, 0.0554, -0.2054, -0.145, -0.2793, 0.1212, 0.0079, 0.2836, -0.2489, 0.1015, 0.1854, 0.2676, 0.181, -0.0783, -0.0458, -0.0396, 0.1497, 0.2495, -0.0204, 0.0785, -0.0658, 0.2247, 0.1771, -0.1038, -0.1869, -0.0816], "32": [0.2988, 0.0938, 0.1092, -0.1362, -0.0172, 0.1382, -0.1826, -0.0538, -0.2837, -0.2996, -0.2983, 0.0218, 0.157, 0.3402, -0.3031, 0.1869, -0.037, 0.1754, 0.2286, -0.0711, -0.187, 0.1144, 0.0986, 0.1055, 0.0138, -0.0223, 0.0225, 0.2363, 0.2116, 0.0291, -0.1019, 0.1323], "33": [0.3413, -0.0144, 0.1817, -0.2439, 0.1714, 0.0469, -0.02, 0.0273, -0.2258, -0.3079, -0.1611, 0.1477, 0.1852, 0.229, -0.3102, 0.0409, 0.2568, 0.1983, 0.1421, -0.194, -0.0905, 0.0328, 0.1514, 0.068, 0.0342, -0.1186, -0.0586, 0.3175, 0.2354, 0.0509, -0.0187, -0.046], "34": [0.2527, 0.0502, 0.1767, -0.1849, 0.1553, -0.1171, 0.1201, -0.0379, -0.2, -0.3013, -0.2813, 0.3697, 0.0291, 0.2252, -0.341, 0.0156, 0.2528, 0.163, 0.0154, -0.1436, -0.2766, 0.0045, 0.0195, 0.1554, 0.0018, -0.2145, 0.0695, 0.0216, 0.1407, -0.1205, 0.0177, -0.0383], "35": [0.2406, 0.2684, 0.0944, -0.1904, 0.2432, 0.0468, 0.2386, -0.0674, -0.2972, -0.176, -0.4825, 0.3435, -0.0763, 0.3083, -0.083, -0.0038, -0.0465, 0.1713, 0.0964, 0.0177, -0.1538, -0.0317, 0.0054, 0.1359, 0.058, 0.0933, -0.0112, 0.0211, -0.0765, -0.1376, -0.031, -0.0401], "36": [0.2301, 0.2455, 0.1405, -0.1009, 0.1766, 0.0594, 0.1197, 0.0018, -0.4186, -0.1762, -0.516, 0.2176, 0.0753, 0.3234, -0.0659, 0.1542, -0.1604, 0.2032, 0.133, 0.1163, -0.1206, 0.0317, 0.0205, 0.0647, 0.0637, 0.0222, -0.0089, 0.0921, -0.0394, -0.0536, -0.0452, 0.1077], "37": [0.3191, -0.0223, -0.0519, 0.0988, -0.2189, -0.1569, -0.0507, -0.2077, 0.2106, -0.2278, -0.0041, -0.1609, -0.0985, 0.1944, -0.4564, 0.0584, 0.0641, -0.0013, -0.1103, -0.1022, -0.1162, 0.2197, -0.3254, 0.1172, -0.2632, -0.2068, 0.0236, 0.0959, -0.0486, 0.1456, -0.1527, -0.0937], "38": [0.2484, -0.0373, 0.0411, 0.0661, -0.2891, -0.0917, 0.1122, -0.33, 0.0492, -0.2159, -0.0602, -0.0861, 0.0134, 0.3663, -0.164, 0.0721, -0.2614, 0.1423, 0.0946, -0.307, -0.0903, 0.0988, -0.3499, -0.0368, 0.0035, -0.0754, 0.1288, -0.0832, -0.1684, 0.0971, -0.2117, -0.2138], "39": [0.181, -0.037, 0.0926, -0.0264, -0.3307, -0.0226, -0.1719, -0.1541, 0.0304, -0.1971, -0.0138, -0.0278, -0.2867, 0.2069, -0.2881, 0.1641, 0.0543, 0.1383, -0.1247, -0.3175, -0.2373, 0.3761, -0.1206, 0.1929, -0.19, -0.1334, 0.104, -0.2146, 0.0532, 0.0136, -0.0167, 0.1259], "40": [0.2153, -0.0497, -0.0592, 0.0147, -0.3282, -0.1607, 0.1983, -0.2238, 0.1195, -0.1374, -0.044, -0.1982, -0.0312, 0.2373, -0.2396, 0.1952, -0.0308, 0.2042, -0.1563, -0.1473, -0.2445, 0.271, -0.3032, 0.2357, -0.0572, -0.1813, 0.0461, -0.0468, -0.1326, 0.2098, -0.0615, -0.1484], "41": [0.4178, -0.0465, 0.1415, 0.018, -0.1292, -0.0418, 0.0065, -0.2413, -0.1474, -0.1687, -0.1345, -0.059, -0.2964, 0.322, -0.3432, 0.1009, -0.0187, 0.004, -0.0516, -0.1876, -0.0959, 0.0823, -0.3378, 0.2016, -0.1696, -0.0076, 0.0338, 0.0132, 0.0052, 0.1556, -0.2247, -0.1453], "42": [0.1695, -0.0181, 0.0029, 0.1469, -0.4, -0.0657, -0.1326, -0.2462, 0.2133, -0.2434, -0.048, -0.105, -0.2007, 0.2546, -0.3658, 0.0367, -0.0727, -0.0294, -0.0199, -0.0617, -0.074, 0.1723, -0.3142, 0.1081, -0.2925, -0.2271, 0.0101, -0.0399, -0.0357, 0.1507, -0.1559, -0.0738], "43": [0.2421, 0.3416, 0.0541, -0.1765, -0.3511, 0.1231, 0.0617, -0.1984, -0.334, -0.2548, 0.2899, 0.062, -0.0799, 0.2301, 0.0046, -0.0544, -0.1097, 0.0556, -0.1833, -0.0088, 0.2729, 0.0826, -0.0274, 0.0653, 0.1879, 0.0821, 0.0344, 0.2527, -0.0967, 0.121, 0.0853, 0.0943], "44": [0.0392, 0.3772, 0.1882, -0.1713, -0.2793, 0.2495, 0.063, -0.2733, -0.2852, -0.132, 0.2149, -0.0192, -0.0846, 0.1796, -0.0238, -0.2094, -0.0376, -0.1511, -0.0366, -0.0074, 0.0729, -0.0352, 0.1826, 0.2586, 0.1159, 0.0697, 0.1433, 0.3113, -0.0012, 0.2355, 0.1301, 0.0525], "45": [0.2567, 0.3363, -0.0602, -0.1385, -0.2284, 0.1312, 0.228, -0.2051, -0.3256, -0.3029, 0.1226, -0.0189, 0.0419, 0.2031, -0.0203, -0.0314, -0.1479, 0.1248, -0.0825, 0.1548, 0.1554, 0.0538, -0.0646, 0.0114, 0.2161, 0.0937, -0.0829, 0.2861, -0.1462, 0.2465, 0.221, -0.0488], "46": [-0.0715, 0.4137, 0.16, -0.2474, -0.393, 0.1527, 0.1161, -0.1766, -0.3045, -0.1622, 0.2083, 0.1939, -0.0282, 0.112, 0.1423, 0.0025, -0.043, 0.0121, -0.2879, 0.0117, 0.1168, 0.19, 0.0048, 0.0974, 0.1213, -0.1014, 0.113, 0.0858, -0.1574, 0.0094, 0.2063, 0.1551], "47": [0.0404, 0.2532, 0.1551, -0.3075, -0.3751, 0.1848, -0.1908, -0.2717, -0.2739, -0.2285, 0.2204, -0.0262, -0.0377, 0.0471, -0.0007, 0.0101, -0.0452, -0.0081, -0.2851, -0.1237, 0.0667, 0.3067, 0.0444, 0.0996, 0.1341, -0.08, -0.0035, 0.2146, -0.0835, 0.2048, 0.1479, -0.0044], "48": [0.4226, 0.2188, 0.1918, -0.1874, -0.2097, 0.1419, -0.1904, -0.2233, -0.4041, -0.2586, 0.1667, 0.0089, -0.0236, 0.2093, -0.1635, -0.0062, -0.0777, 0.0801, -0.1263, -0.0576, 0.1404, 0.1292, 0.0116, 0.1185, 0.0495, 0.1365, 0.0148, 0.3128, 0.0072, 0.1377, -0.0338, 0.0271], "49": [0.0467, 0.3739, 0.4231, -0.1726, -0.2031, 0.1782, -0.0782, -0.3052, -0.331, -0.2179, 0.1094, 0.0809, 0.0293, 0.0895, -0.1291, -0.1813, -0.047, -0.0748, -0.1145, 0.0921, 0.0252, -0.0427, -0.0425, 0.2757, -0.1513, 0.0931, 0.1362, 0.1953, -0.0226, 0.1597, 0.137, -0.0159], "50": [0.0699, 0.365, 0.123, -0.0829, -0.3257, -0.0028, 0.2947, -0.3366, -0.1129, -0.1387, 0.2962, -0.0317, -0.0478, 0.2878, -0.0774, -0.3, 0.059, 0.0036, 0.0171, 0.0098, 0.0392, -0.0419, -0.0826, 0.2314, 0.0675, -0.0039, 0.1247, 0.2551, -0.1203, 0.1705, 0.1492, -0.1156], "51": [0.0786, -0.0654, -0.0443, -0.1926, -0.1074, -0.0941, 0.139, 0.032, 0.1932, -0.0188, 0.264, 0.0691, 0.3703, 0.1663, 0.0939, 0.0971, 0.2626, 0.3373, -0.2192, -0.1929, -0.0763, 0.2511, 0.0977, 0.109, 0.2251, 0.031, -0.1892, 0.1388, -0.1579, 0.0965, 0.1907, -0.281], "52": [0.1085, -0.0521, 0.1399, -0.1865, -0.1849, -0.0067, -0.1373, -0.0448, 0.0097, -0.0573, 0.0715, 0.098, 0.2835, 0.2403, 0.0162, 0.0598, 0.1329, 0.3228, -0.0111, -0.4038, -0.2073, 0.341, 0.0739, 0.024, 0.2894, 0.1399, -0.2124, -0.1152, 0.1181, 0.0696, 0.1426, -0.2547], "53": [0.1019, 0.1048, -0.0003, -0.2314, 0.0519, -0.1871, 0.1927, 0.0567, 0.1719, 0.0233, -0.1922, 0.3885, 0.2358, 0.3408, 0.0276, -0.0479, 0.122, 0.3718, 0.0015, -0.0985, -0.1344, 0.2155, 0.1918, -0.1027, 0.316, -0.0297, -0.0536, 0.0711, -0.0193, -0.1945, -0.0424, -0.1758], "54": [0.0264, 0.0074, 0.2099, -0.171, -0.0483, -0.0809, 0.0368, 0.0896, 0.0317, -0.2121, 0.1503, 0.2439, 0.2443, 0.2887, 0.0429, -0.0767, 0.3014, 0.367, -0.0076, -0.4253, -0.0293, 0.2402, 0.0661, 0.0, 0.1042, -0.0343, -0.1868, 0.0015, 0.0377, 0.1244, 0.2016, -0.2346], "55": [0.0349, 0.1346, 0.1028, -0.0963, -0.1433, -0.0518, 0.0848, -0.1038, 0.164, 0.0266, 0.2557, 0.0978, 0.3441, 0.3254, 0.1292, -0.0647, 0.1075, 0.3666, -0.0813, -0.3172, -0.0556, 0.3539, -0.0397, -0.0183, 0.1615, 0.113, -0.1578, -0.0221, -0.2182, 0.0079, 0.0743, -0.2668], "56": [0.0881, -0.0608, 0.0619, -0.1603, -0.2612, 0.1133, -0.095, 0.1006, 0.079, -0.0168, 0.0526, 0.1402, 0.4087, 0.3197, 0.1983, 0.1231, 0.0345, 0.3344, -0.0542, -0.346, -0.0275, 0.3061, 0.1848, -0.0472, 0.295, 0.0671, -0.1357, 0.0395, 0.0128, 0.0147, 0.0922, -0.1389], "57": [0.097, -0.0341, 0.2068, -0.1966, -0.1596, 0.0635, -0.0387, 0.1104, 0.0103, -0.1794, -0.0167, 0.1523, 0.3411, 0.2919, 0.1289, 0.0956, 0.0537, 0.4323, 0.0334, -0.4221, -0.0088, 0.257, 0.0407, -0.0297, 0.1873, 0.0011, -0.1846, 0.062, 0.075, 0.0741, 0.0812, -0.2308], "58": [-0.1252, 0.0272, 0.2967, -0.0267, -0.2341, -0.0027, 0.0244, 0.1174, 0.03, -0.1483, 0.1751, 0.3062, 0.1465, 0.1903, 0.1186, -0.0458, 0.2556, 0.2411, -0.1304, -0.4201, -0.0105, 0.3259, -0.075, 0.0395, 0.0133, -0.1458, -0.0891, -0.1024, -0.046, 0.0258, 0.3284, -0.1537], "59": [0.1246, 0.1826, 0.104, -0.1934, -0.2182, -0.0068, -0.2133, -0.1872, -0.0123, -0.0963, 0.1269, 0.0994, 0.3616, 0.3111, 0.0818, -0.0426, -0.0481, 0.3146, 0.0886, -0.2846, -0.1684, 0.3822, 0.0714, -0.0326, 0.2742, 0.1732, -0.084, -0.0076, -0.0583, 0.0092, 0.0188, -0.128], "60": [0.1541, 0.0288, 0.0421, -0.2663, -0.1831, -0.0366, -0.0269, 0.025, 0.0432, 0.0416, 0.0906, 0.1257, 0.2742, 0.3353, 0.1167, 0.0705, 0.1031, 0.4367, -0.0484, -0.2686, -0.1422, 0.3092, 0.1713, 0.0573, 0.2911, 0.2197, -0.1655, 0.014, 0.0778, 0.0051, 0.0578, -0.1958]}, "genre_centroids": {"Sci-Fi": [-0.0191, -0.0481, 0.407, 0.0749, -0.0633, 0.0389, -0.0052, -0.2213, -0.0762, -0.2045, -0.0539, -0.1159, -0.3002, -0.1475, 0.1676, -0.0027, -0.0745, 0.3166, 0.3457, -0.1026, 0.4373, 0.1383, 0.121, 0.155, -0.0632, 0.1422, 0.0682, -0.1288, -0.0134, 0.1541, -0.0574, -0.1002], "Action": [-0.0574, 0.1119, 0.1656, 0.068, 0.024, -0.0636, 0.04, -0.3034, 0.003, -0.288, -0.0893, 0.1311, -0.0922, -0.1541, 0.1161, -0.0812, -0.068, 0.299, 0.2784, 0.0494, 0.1177, 0.3758, 0.2477, 0.2216, -0.0361, -0.0073, 0.3326, -0.2595, -0.1994, -0.1476, 0.0331, 0.1092], "Drama": [0.2733, -0.1158, 0.2363, -0.0393, 0.1893, -0.0433, 0.095, -0.1963, -0.1511, -0.4315, -0.3573, 0.1008, -0.1724, -0.1234, -0.0463, 0.0159, -0.0778, 0.3382, 0.2796, 0.042, 0.1421, 0.1218, 0.1926, 0.109, 0.0841, 0.0139, 0.2534, 0.0226, 0.039, 0.0052, -0.1225, -0.0462], "Thriller": [0.1994, -0.2529, 0.1888, 0.0027, -0.1388, -0.1223, 0.02, -0.4179, 0.0419, -0.341, -0.0975, -0.1429, -0.1589, -0.1737, -0.2795, -0.0108, -0.0589, 0.2207, 0.1099, -0.0201, 0.1125, 0.3496, 0.0056, -0.0248, -0.0205, -0.1173, 0.2942, -0.0012, -0.0142, 0.1151, -0.206, -0.1138], "Mystery": [0.0539, -0.045, 0.2078, -0.0885, -0.2997, 0.0342, 0.0972, -0.4753, -0.1907, -0.3525, -0.0372, -0.099, -0.1649, -0.197, -0.0201, -0.0572, -0.1956, 0.1368, -0.0012, 0.171, 0.1898, 0.1778, 0.0579, 0.0784, 0.2327, 0.0175, 0.3166, 0.1098, -0.0621, 0.1614, 0.0034, 0.1271], "Comedy": [-0.0521, -0.2447, 0.183, -0.0944, -0.0619, -0.1142, 0.0162, -0.1761, 0.0149, -0.2012, -0.0235, 0.0647, 0.1188, -0.1042, 0.121, 0.1184, 0.0424, 0.5126, 0.0211, -0.0861, 0.1546, 0.4888, 0.1741, -0.0586, 0.3053, -0.016, 0.1478, -0.0431, -0.1731, -0.0128, 0.0375, -0.1735]}, "latent_map": [{"id": 1, "title": "Interstellar", "genre": "Sci-Fi", "year": 2014, "rating": 8.7, "x": -0.4193, "y": -0.4999}, {"id": 2, "title": "Inception", "genre": "Sci-Fi", "year": 2010, "rating": 8.8, "x": -0.3339, "y": -0.5346}, {"id": 3, "title": "The Matrix", "genre": "Sci-Fi", "year": 1999, "rating": 8.7, "x": -0.3971, "y": -0.308}, {"id": 4, "title": "Ex Machina", "genre": "Sci-Fi", "year": 2014, "rating": 7.7, "x": 0.093, "y": -0.4734}, {"id": 5, "title": "Blade Runner 2049", "genre": "Sci-Fi", "year": 2017, "rating": 8.0, "x": -0.274, "y": -0.454}, {"id": 6, "title": "The Dark Knight", "genre": "Action", "year": 2008, "rating": 9.0, "x": -0.0277, "y": 0.6945}, {"id": 7, "title": "Gladiator", "genre": "Action", "year": 2000, "rating": 8.5, "x": 0.0049, "y": 0.7191}, {"id": 8, "title": "Mad Max: Fury Road", "genre": "Action", "year": 2015, "rating": 8.1, "x": 0.1684, "y": 0.7217}, {"id": 9, "title": "John Wick", "genre": "Action", "year": 2014, "rating": 7.4, "x": 0.0216, "y": 0.5829}, {"id": 10, "title": "Top Gun: Maverick", "genre": "Action", "year": 2022, "rating": 8.2, "x": -0.2908, "y": 0.6642}, {"id": 11, "title": "The Social Network", "genre": "Drama", "year": 2010, "rating": 7.8, "x": -0.0182, "y": -0.0061}, {"id": 12, "title": "Oppenheimer", "genre": "Drama", "year": 2023, "rating": 8.3, "x": -0.0939, "y": 0.0162}, {"id": 13, "title": "Whiplash", "genre": "Drama", "year": 2014, "rating": 8.5, "x": 0.2395, "y": 0.2469}, {"id": 14, "title": "Fight Club", "genre": "Drama", "year": 1999, "rating": 8.8, "x": 0.0666, "y": 0.4063}, {"id": 15, "title": "Parasite", "genre": "Thriller", "year": 2019, "rating": 8.5, "x": -0.6, "y": -0.0304}, {"id": 16, "title": "Se7en", "genre": "Thriller", "year": 1995, "rating": 8.6, "x": -0.4275, "y": -0.1927}, {"id": 17, "title": "Shutter Island", "genre": "Thriller", "year": 2010, "rating": 8.2, "x": -0.7138, "y": -0.1087}, {"id": 18, "title": "Zodiac", "genre": "Thriller", "year": 2007, "rating": 7.7, "x": -0.4213, "y": 0.0768}, {"id": 19, "title": "Knives Out", "genre": "Mystery", "year": 2019, "rating": 7.9, "x": -0.3569, "y": -0.0477}, {"id": 20, "title": "Superbad", "genre": "Comedy", "year": 2007, "rating": 7.6, "x": 0.5441, "y": -0.3435}, {"id": 21, "title": "Arrival", "genre": "Sci-Fi", "year": 2016, "rating": 7.9, "x": -0.1012, "y": -0.5856}, {"id": 22, "title": "Dune: Part Two", "genre": "Sci-Fi", "year": 2024, "rating": 8.5, "x": -0.1325, "y": -0.4515}, {"id": 23, "title": "The Martian", "genre": "Sci-Fi", "year": 2015, "rating": 8.0, "x": -0.0372, "y": -0.5502}, {"id": 24, "title": "Her", "genre": "Sci-Fi", "year": 2013, "rating": 8.0, "x": 0.0107, "y": -0.5297}, {"id": 25, "title": "Edge of Tomorrow", "genre": "Sci-Fi", "year": 2014, "rating": 7.9, "x": 0.1699, "y": -0.5017}, {"id": 26, "title": "Spider-Man: Into the Spider-Verse", "genre": "Action", "year": 2018, "rating": 8.4, "x": 0.0502, "y": 0.6331}, {"id": 27, "title": "Mission: Impossible \u2014 Fallout", "genre": "Action", "year": 2018, "rating": 7.7, "x": 0.1021, "y": 0.3506}, {"id": 28, "title": "The Bourne Ultimatum", "genre": "Action", "year": 2007, "rating": 8.0, "x": -0.0134, "y": 0.7716}, {"id": 29, "title": "Casino Royale", "genre": "Action", "year": 2006, "rating": 8.0, "x": 0.1145, "y": 0.6702}, {"id": 30, "title": "Everything Everywhere All at Once", "genre": "Action", "year": 2022, "rating": 7.8, "x": -0.0251, "y": 0.88}, {"id": 31, "title": "The Shawshank Redemption", "genre": "Drama", "year": 1994, "rating": 9.3, "x": 0.2445, "y": 0.1696}, {"id": 32, "title": "Good Will Hunting", "genre": "Drama", "year": 1997, "rating": 8.3, "x": 0.003, "y": 0.279}, {"id": 33, "title": "The Godfather", "genre": "Drama", "year": 1972, "rating": 9.2, "x": 0.3242, "y": 0.0771}, {"id": 34, "title": "The Prestige", "genre": "Drama", "year": 2006, "rating": 8.5, "x": 0.1856, "y": 0.4765}, {"id": 35, "title": "A Beautiful Mind", "genre": "Drama", "year": 2001, "rating": 8.2, "x": 0.1671, "y": 0.4962}, {"id": 36, "title": "12 Angry Men", "genre": "Drama", "year": 1957, "rating": 9.0, "x": 0.1205, "y": 0.5137}, {"id": 37, "title": "Prisoners", "genre": "Thriller", "year": 2013, "rating": 8.2, "x": -0.6786, "y": -0.0138}, {"id": 38, "title": "Gone Girl", "genre": "Thriller", "year": 2014, "rating": 8.1, "x": -0.4379, "y": -0.1531}, {"id": 39, "title": "Nightcrawler", "genre": "Thriller", "year": 2014, "rating": 7.8, "x": -0.4402, "y": 0.1554}, {"id": 40, "title": "No Country for Old Men", "genre": "Thriller", "year": 2007, "rating": 8.2, "x": -0.4185, "y": -0.0893}, {"id": 41, "title": "Sicario", "genre": "Thriller", "year": 2015, "rating": 7.7, "x": -0.6879, "y": -0.1326}, {"id": 42, "title": "The Silence of the Lambs", "genre": "Thriller", "year": 1991, "rating": 8.6, "x": -0.823, "y": -0.0112}, {"id": 43, "title": "Memento", "genre": "Mystery", "year": 2000, "rating": 8.4, "x": -0.1611, "y": -0.2424}, {"id": 44, "title": "Glass Onion", "genre": "Mystery", "year": 2022, "rating": 7.1, "x": -0.2311, "y": -0.1725}, {"id": 45, "title": "Memories of Murder", "genre": "Mystery", "year": 2003, "rating": 8.1, "x": -0.0708, "y": -0.2213}, {"id": 46, "title": "Chinatown", "genre": "Mystery", "year": 1974, "rating": 8.1, "x": -0.0171, "y": 0.033}, {"id": 47, "title": "The Usual Suspects", "genre": "Mystery", "year": 1995, "rating": 8.5, "x": -0.1023, "y": -0.3351}, {"id": 48, "title": "L.A. Confidential", "genre": "Mystery", "year": 1997, "rating": 8.2, "x": -0.2133, "y": -0.2495}, {"id": 49, "title": "The Nice Guys", "genre": "Mystery", "year": 2016, "rating": 7.4, "x": -0.3646, "y": -0.0557}, {"id": 50, "title": "Catch Me If You Can", "genre": "Mystery", "year": 2002, "rating": 8.1, "x": -0.2718, "y": -0.2111}, {"id": 51, "title": "Groundhog Day", "genre": "Comedy", "year": 1993, "rating": 8.0, "x": 0.7517, "y": -0.318}, {"id": 52, "title": "The Grand Budapest Hotel", "genre": "Comedy", "year": 2014, "rating": 8.1, "x": 0.6822, "y": -0.3248}, {"id": 53, "title": "Game Night", "genre": "Comedy", "year": 2018, "rating": 6.9, "x": 0.8602, "y": 0.2257}, {"id": 54, "title": "The Big Short", "genre": "Comedy", "year": 2015, "rating": 7.8, "x": 0.7102, "y": -0.2665}, {"id": 55, "title": "Palm Springs", "genre": "Comedy", "year": 2020, "rating": 7.4, "x": 0.614, "y": -0.2923}, {"id": 56, "title": "Hot Fuzz", "genre": "Comedy", "year": 2007, "rating": 7.8, "x": 0.8045, "y": -0.25}, {"id": 57, "title": "Shaun of the Dead", "genre": "Comedy", "year": 2004, "rating": 7.9, "x": 0.7055, "y": -0.335}, {"id": 58, "title": "The Truman Show", "genre": "Comedy", "year": 1998, "rating": 8.2, "x": 0.4786, "y": -0.1513}, {"id": 59, "title": "Booksmart", "genre": "Comedy", "year": 2019, "rating": 7.1, "x": 0.5617, "y": -0.1533}, {"id": 60, "title": "21 Jump Street", "genre": "Comedy", "year": 2012, "rating": 7.2, "x": 0.8027, "y": -0.2638}], "pca_projection": {"mean": [0.13505, 0.16273, 0.14724, -0.06989, -0.13935, 0.03335, 0.00605, -0.08201, -0.09937, -0.15253, -0.00203, 0.08353, 0.02109, 0.26084, -0.04338, 0.02036, -0.00885, 0.17927, 0.04129, -0.16956, -0.02852, 0.16411, -0.05322, 0.12681, -0.04135, 0.04145, -0.02292, -0.00498, -0.01564, 0.0512, 0.01651, -0.03974], "components": [[-0.07691, -0.03938, -0.01019, -0.22551, 0.2039, -0.03661, 0.03449, 0.22739, 0.0528, 0.08914, 0.00856, 0.26355, 0.40587, 0.0405, 0.24781, -0.01347, 0.21699, 0.29532, -0.0081, -0.12993, -0.07736, 0.11001, 0.33543, -0.13686, 0.36836, 0.12102, -0.161, 0.03151, 0.03354, -0.1452, 0.16565, -0.10037], [0.01244, 0.17678, -0.1674, 0.18897, 0.19941, -0.05621, 0.02617, 0.03888, 0.03679, -0.11894, -0.27266, 0.28714, 0.09582, -0.01471, -0.11139, 0.03867, 0.02149, -0.05377, 0.10106, 0.20832, -0.25715, 0.02692, 0.17112, 0.11203, -0.12325, -0.1285, 0.26166, -0.19773, -0.1573, -0.33699, 0.04986, 0.46738]], "scale": 1.19637}, "benchmark": {"evaluated_users": 150, "HitRate@5": 0.94, "HitRate@10": 1.0, "Recall@10": 0.8756, "NDCG@5": 0.4982, "NDCG@10": 0.5846, "MRR@10": 0.546, "P50_Latency_ms": 2.0768, "P95_Latency_ms": 4.5634, "model": "Two-Stage (HNSW + Re-Ranker)", "backend": "two_stage_hnsw_rerank"}, "movielens": {"evaluated_users": 934, "HitRate@5": 0.1306, "HitRate@10": 0.2077, "Recall@10": 0.1156, "NDCG@5": 0.0501, "NDCG@10": 0.0688, "MRR@10": 0.0723, "P50_Latency_ms": 0.0853, "P95_Latency_ms": 0.2534, "model": "Two-Tower (FAISS_FLAT)"}};
 
     const GENRE_COLORS = {
       "Sci-Fi": "#38bdf8",
@@ -337,59 +376,71 @@
       "Comedy": "text-amber-300 bg-amber-500/15 border-amber-400/25"
     };
 
-    const IS_STATIC_HOST = Boolean(EMBEDDED_DATA) && (
-      window.location.hostname.endsWith("github.io") ||
-      window.location.protocol === "file:"
-    );
-
     const FEATURED_TAGS = [
       "space", "ai", "time", "cyberpunk", "detective", "noir",
       "heist", "psychological", "twist", "espionage", "martial-arts", "satire"
     ];
 
+    const IS_STATIC_HOST = Boolean(EMBEDDED_DATA) && (
+      window.location.hostname.endsWith("github.io") ||
+      window.location.protocol === "file:"
+    );
+
     let activeMode = "existing";
-    let selectedColdTags = new Set(["ai", "space", "time"]);
+    let selectedColdUserTags = new Set(["ai", "space", "time"]);
+    let selectedColdItemTags = new Set(["ai", "cyberpunk", "time"]);
+    let simulatedWatchesByUser = {};
     let currentRecData = null;
+    let activeQueryCoord = null;
     let latentItems = EMBEDDED_DATA ? EMBEDDED_DATA.latent_map : [];
+    let pcaProj = EMBEDDED_DATA ? EMBEDDED_DATA.pca_projection : null;
     let catalogUsers = EMBEDDED_DATA ? EMBEDDED_DATA.users : [];
+    let catalogById = {};
+    if (EMBEDDED_DATA && EMBEDDED_DATA.catalog) {
+      EMBEDDED_DATA.catalog.forEach(m => { catalogById[m.id] = m; });
+    }
     let currentHistoryIds = new Set();
     let currentRecRanks = {};
 
     const userSelect = document.getElementById("userSelect");
     const indexSelect = document.getElementById("indexSelect");
+    const diversitySelect = document.getElementById("diversitySelect");
     const coldIndexProxy = document.getElementById("coldIndexProxy");
     const excludeWatched = document.getElementById("excludeWatched");
     const coldGenreSelect = document.getElementById("coldGenreSelect");
+    const coldItemTitleInput = document.getElementById("coldItemTitleInput");
+    const coldItemGenreSelect = document.getElementById("coldItemGenreSelect");
     const tabExisting = document.getElementById("tabExisting");
-    const tabColdStart = document.getElementById("tabColdStart");
+    const tabColdUser = document.getElementById("tabColdUser");
+    const tabColdItem = document.getElementById("tabColdItem");
     const existingControls = document.getElementById("existingControls");
-    const coldStartControls = document.getElementById("coldStartControls");
+    const coldUserControls = document.getElementById("coldUserControls");
+    const coldItemControls = document.getElementById("coldItemControls");
     const historySection = document.getElementById("historySection");
     const historyList = document.getElementById("historyList");
     const recommendationsList = document.getElementById("recommendationsList");
-    const exportBtn = document.getElementById("exportBtn");
     const internalsDrawer = document.getElementById("internalsDrawer");
+    const itemModal = document.getElementById("itemModal");
+    const resetSimWatchBtn = document.getElementById("resetSimWatchBtn");
 
     const canvas = document.getElementById("latentCanvas");
     const ctx = canvas.getContext("2d");
     const tooltip = document.getElementById("canvasTooltip");
 
-    function openDrawer() {
-      internalsDrawer.classList.remove("hidden");
-      drawLatentMap();
-    }
-    function closeDrawer() {
-      internalsDrawer.classList.add("hidden");
-    }
+    function openDrawer() { internalsDrawer.classList.remove("hidden"); drawLatentMap(); }
+    function closeDrawer() { internalsDrawer.classList.add("hidden"); }
     document.getElementById("openDrawerBtn").addEventListener("click", openDrawer);
     document.getElementById("openDrawerLink").addEventListener("click", openDrawer);
     document.getElementById("closeDrawerBtn").addEventListener("click", closeDrawer);
     document.getElementById("drawerBackdrop").addEventListener("click", closeDrawer);
 
-    function renderTagChips() {
-      const container = document.getElementById("tagChipsContainer");
-      container.innerHTML = FEATURED_TAGS.map(tag => {
-        const active = selectedColdTags.has(tag);
+    document.getElementById("closeItemModalBtn").addEventListener("click", () => itemModal.classList.add("hidden"));
+    document.getElementById("itemModalBackdrop").addEventListener("click", () => itemModal.classList.add("hidden"));
+
+    function renderTagChipGroup(containerId, selectedSet, onChange) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = FEATURED_TAGS.map(tag => {
+        const active = selectedSet.has(tag);
         return `<button data-tag="${tag}" class="text-[11px] font-mono px-2.5 py-1 rounded-full border transition ${
           active
             ? "bg-zinc-100 text-zinc-950 border-zinc-100 font-semibold"
@@ -397,41 +448,41 @@
         }">#${tag}</button>`;
       }).join("");
 
-      container.querySelectorAll("button").forEach(btn => {
+      el.querySelectorAll("button").forEach(btn => {
         btn.addEventListener("click", () => {
-          const tag = btn.dataset.tag;
-          if (selectedColdTags.has(tag)) {
-            if (selectedColdTags.size > 1) selectedColdTags.delete(tag);
+          const t = btn.dataset.tag;
+          if (selectedSet.has(t)) {
+            if (selectedSet.size > 1) selectedSet.delete(t);
           } else {
-            selectedColdTags.add(tag);
+            selectedSet.add(t);
           }
-          renderTagChips();
-          if (activeMode === "cold") executeColdStart();
+          renderTagChipGroup(containerId, selectedSet, onChange);
+          onChange();
         });
       });
     }
 
     function switchMode(mode) {
       activeMode = mode;
-      if (mode === "existing") {
-        tabExisting.className = "px-3 py-1 rounded-full bg-zinc-100 text-zinc-950 font-semibold transition";
-        tabColdStart.className = "px-3 py-1 rounded-full text-zinc-400 hover:text-zinc-200 transition";
-        existingControls.classList.remove("hidden");
-        coldStartControls.classList.add("hidden");
-        historySection.classList.remove("hidden");
-        executeRecommendation();
-      } else {
-        tabColdStart.className = "px-3 py-1 rounded-full bg-zinc-100 text-zinc-950 font-semibold transition";
-        tabExisting.className = "px-3 py-1 rounded-full text-zinc-400 hover:text-zinc-200 transition";
-        existingControls.classList.add("hidden");
-        coldStartControls.classList.remove("hidden");
-        historySection.classList.add("hidden");
-        executeColdStart();
-      }
+      const activeCls = "px-3 py-1 rounded-full bg-zinc-100 text-zinc-950 font-semibold transition";
+      const idleCls = "px-3 py-1 rounded-full text-zinc-400 hover:text-zinc-200 transition";
+      tabExisting.className = mode === "existing" ? activeCls : idleCls;
+      tabColdUser.className = mode === "coldUser" ? activeCls : idleCls;
+      tabColdItem.className = mode === "coldItem" ? activeCls : idleCls;
+
+      existingControls.classList.toggle("hidden", mode !== "existing");
+      coldUserControls.classList.toggle("hidden", mode !== "coldUser");
+      coldItemControls.classList.toggle("hidden", mode !== "coldItem");
+      historySection.classList.toggle("hidden", mode !== "existing");
+
+      if (mode === "existing") executeRecommendation();
+      else if (mode === "coldUser") executeColdUser();
+      else executeColdItem();
     }
 
     tabExisting.addEventListener("click", () => switchMode("existing"));
-    tabColdStart.addEventListener("click", () => switchMode("cold"));
+    tabColdUser.addEventListener("click", () => switchMode("coldUser"));
+    tabColdItem.addEventListener("click", () => switchMode("coldItem"));
 
     function dotProduct(a, b) {
       let s = 0;
@@ -440,83 +491,163 @@
     }
 
     function normalizeVec(v) {
-      let norm = Math.sqrt(dotProduct(v, v));
-      if (norm < 1e-8) return v;
-      return v.map(x => x / norm);
+      const n = Math.sqrt(dotProduct(v, v));
+      return n < 1e-8 ? v : v.map(x => x / n);
     }
 
-    function computeClientRecommendation(userId, exclude, indexType) {
+    function projectQueryTo2D(vec) {
+      if (!pcaProj || !vec) return null;
+      const centered = vec.map((v, i) => v - pcaProj.mean[i]);
+      const x = dotProduct(centered, pcaProj.components[0]) * pcaProj.scale;
+      const y = dotProduct(centered, pcaProj.components[1]) * pcaProj.scale;
+      return {
+        x: Math.max(-0.92, Math.min(0.92, x)),
+        y: Math.max(-0.92, Math.min(0.92, y))
+      };
+    }
+
+    function stage2RerankClient(userTags, historyMovies, primaryGenre, scoredCandidates, diversityLambda, topK) {
+      const uSet = new Set((userTags || []).map(t => t.toLowerCase()));
+      const hSet = new Set();
+      (historyMovies || []).forEach(hm => (hm.tags || []).forEach(t => hSet.add(t.toLowerCase())));
+      const combined = new Set([...uSet, ...hSet]);
+
+      const withS2 = scoredCandidates.map(cand => {
+        const cosNorm = Math.max(0, Math.min(1, (cand.similarity_score + 1.0) * 0.5));
+        const itemTags = new Set((cand.tags || []).map(t => t.toLowerCase()));
+        let inter = 0;
+        itemTags.forEach(t => { if (combined.has(t)) inter++; });
+        const unionCount = new Set([...itemTags, ...uSet]).size;
+        const tagSim = unionCount > 0 ? inter / unionCount : 0;
+        const genreBonus = cand.genre === primaryGenre ? 1.0 : 0.0;
+        const quality = Math.max(0, Math.min(1, ((cand.rating || 7.8) - 6.5) / 3.0));
+        const s2 = 0.62 * cosNorm + 0.20 * tagSim + 0.12 * genreBonus + 0.06 * quality;
+        return { ...cand, stage2_score: +s2.toFixed(4), affinity_pct: Math.min(99, Math.max(55, Math.round(s2 * 100))) };
+      });
+
+      withS2.sort((a, b) => b.stage2_score - a.stage2_score);
+      if (diversityLambda >= 0.999) return withS2.slice(0, topK);
+
+      const selected = [];
+      const selectedVecs = [];
+      const remaining = [...withS2];
+
+      while (remaining.length > 0 && selected.length < topK) {
+        let bestIdx = 0;
+        if (selectedVecs.length > 0) {
+          let bestMmr = -1e9;
+          for (let i = 0; i < remaining.length; i++) {
+            const emb = EMBEDDED_DATA.item_embeddings[String(remaining[i].id)];
+            let maxSim = 0;
+            if (emb) {
+              for (const sv of selectedVecs) maxSim = Math.max(maxSim, dotProduct(emb, sv));
+            }
+            const mmr = diversityLambda * remaining[i].stage2_score - (1 - diversityLambda) * Math.max(0, maxSim);
+            if (mmr > bestMmr) { bestMmr = mmr; bestIdx = i; }
+          }
+        }
+        const chosen = remaining.splice(bestIdx, 1)[0];
+        selected.push(chosen);
+        const emb = EMBEDDED_DATA.item_embeddings[String(chosen.id)];
+        if (emb) selectedVecs.push(emb);
+      }
+      return selected;
+    }
+
+    function computeClientRecommendation(userId, exclude, indexType, divVal) {
       const t0 = performance.now();
       const user = EMBEDDED_DATA.users.find(u => u.user_id === userId) || EMBEDDED_DATA.users[0];
-      const uEmbed = EMBEDDED_DATA.user_embeddings[String(user.user_id)];
-      const watchedSet = new Set(user.history_item_ids);
-      const catalogMap = {};
-      EMBEDDED_DATA.catalog.forEach(m => { catalogMap[m.id] = m; });
+      const simWatches = simulatedWatchesByUser[userId] || [];
+      const fullHistoryIds = [...user.history_item_ids, ...simWatches];
+      const watchedSet = new Set(fullHistoryIds);
 
-      const scored = [];
+      // Shift active user vector dynamically toward newly simulated watches
+      let uEmbed = EMBEDDED_DATA.user_embeddings[String(user.user_id)].slice();
+      if (simWatches.length > 0) {
+        for (const wid of simWatches) {
+          const ie = EMBEDDED_DATA.item_embeddings[String(wid)];
+          if (ie) uEmbed = uEmbed.map((val, d) => val + 0.38 * ie[d]);
+        }
+        uEmbed = normalizeVec(uEmbed);
+      }
+      activeQueryCoord = projectQueryTo2D(uEmbed);
+
+      const pool = [];
       for (const item of EMBEDDED_DATA.catalog) {
         if (exclude && watchedSet.has(item.id)) continue;
         const iEmbed = EMBEDDED_DATA.item_embeddings[String(item.id)];
         const sim = iEmbed ? dotProduct(uEmbed, iEmbed) : 0;
-        const affinityPct = Math.min(99, Math.max(55, Math.round((sim + 1.0) * 50.0)));
-        scored.push({ ...item, similarity_score: sim, affinity_pct: affinityPct });
+        const pct = Math.min(99, Math.max(55, Math.round((sim + 1.0) * 50.0)));
+        pool.push({ ...item, similarity_score: +sim.toFixed(4), affinity_pct: pct });
       }
-      scored.sort((a, b) => b.similarity_score - a.similarity_score);
-      const elapsed = Math.max(0.14, performance.now() - t0);
+      pool.sort((a, b) => b.similarity_score - a.similarity_score);
 
+      const historyMovies = fullHistoryIds.map(id => catalogById[id]).filter(Boolean);
+      let finalRecs;
+      let stage2Ms = 0.0;
+      if (divVal !== "off") {
+        const ts0 = performance.now();
+        finalRecs = stage2RerankClient(
+          user.preferred_tags, historyMovies, user.primary_genre,
+          pool.slice(0, 22), parseFloat(divVal), 6
+        );
+        stage2Ms = Math.max(0.02, performance.now() - ts0);
+      } else {
+        finalRecs = pool.slice(0, 6);
+      }
+
+      const elapsed = Math.max(0.15, performance.now() - t0);
       return {
         user_id: user.user_id,
         username: user.username,
         preferred_genre: user.primary_genre,
         preferred_tags: user.preferred_tags || [],
+        simulated_count: simWatches.length,
         index_backend: `faiss_${indexType}`,
-        watch_history: user.history_item_ids.map(id => catalogMap[id]).filter(Boolean),
-        recommendations: scored.slice(0, 6),
+        stage2_enabled: divVal !== "off",
+        watch_history: historyMovies,
+        recommendations: finalRecs,
         latency_ms: elapsed,
         latency_breakdown: {
-          user_tower_ms: +(elapsed * 0.48).toFixed(3),
-          ann_search_ms: +(elapsed * 0.36).toFixed(3),
-          filter_ms: +(elapsed * 0.16).toFixed(3),
+          user_tower_ms: +(elapsed * 0.45).toFixed(3),
+          ann_search_ms: +(elapsed * 0.35).toFixed(3),
+          stage2_rerank_ms: +stage2Ms.toFixed(3),
           total_ms: +elapsed.toFixed(3)
         }
       };
     }
 
-    function computeClientColdStart(genre, tags, indexType) {
-      const t0 = performance.now();
-      const baseCentroid = EMBEDDED_DATA.genre_centroids[genre] || EMBEDDED_DATA.genre_centroids["Sci-Fi"];
-      const dim = baseCentroid.length;
-      const tagAccum = new Array(dim).fill(0);
-      let tagHits = 0;
-
+    function buildColdEmbedding(genre, tags) {
+      const base = EMBEDDED_DATA.genre_centroids[genre] || EMBEDDED_DATA.genre_centroids["Sci-Fi"];
+      const dim = base.length;
+      const accum = new Array(dim).fill(0);
+      let hits = 0;
       for (const item of EMBEDDED_DATA.catalog) {
         const overlap = item.tags.filter(t => tags.includes(t)).length;
         if (overlap > 0) {
           const emb = EMBEDDED_DATA.item_embeddings[String(item.id)];
           if (emb) {
-            for (let d = 0; d < dim; d++) tagAccum[d] += emb[d] * overlap;
-            tagHits += overlap;
+            for (let d = 0; d < dim; d++) accum[d] += emb[d] * overlap;
+            hits += overlap;
           }
         }
       }
+      if (hits === 0) return base.slice();
+      const tNorm = normalizeVec(accum);
+      return normalizeVec(base.map((v, d) => 0.58 * v + 0.42 * tNorm[d]));
+    }
 
-      let qVec = baseCentroid.slice();
-      if (tagHits > 0) {
-        const normTag = normalizeVec(tagAccum);
-        qVec = normalizeVec(baseCentroid.map((v, d) => 0.6 * v + 0.4 * normTag[d]));
-      }
-
+    function computeClientColdUser(genre, tags, indexType) {
+      const t0 = performance.now();
+      const qVec = buildColdEmbedding(genre, tags);
+      activeQueryCoord = projectQueryTo2D(qVec);
       const scored = EMBEDDED_DATA.catalog.map(item => {
-        const iEmbed = EMBEDDED_DATA.item_embeddings[String(item.id)];
-        const sim = iEmbed ? dotProduct(qVec, iEmbed) : 0;
-        const affinityPct = Math.min(99, Math.max(55, Math.round((sim + 1.0) * 50.0)));
-        return { ...item, similarity_score: sim, affinity_pct: affinityPct };
-      });
-      scored.sort((a, b) => b.similarity_score - a.similarity_score);
+        const sim = dotProduct(qVec, EMBEDDED_DATA.item_embeddings[String(item.id)]);
+        return { ...item, similarity_score: +sim.toFixed(4), affinity_pct: Math.min(99, Math.max(55, Math.round((sim + 1) * 50))) };
+      }).sort((a, b) => b.similarity_score - a.similarity_score);
       const elapsed = Math.max(0.16, performance.now() - t0);
-
       return {
-        cold_start: true,
+        cold_start: "user",
         username: "New Viewer",
         preferred_genre: genre,
         preferred_tags: tags,
@@ -524,12 +655,29 @@
         watch_history: [],
         recommendations: scored.slice(0, 6),
         latency_ms: elapsed,
-        latency_breakdown: {
-          user_tower_ms: +(elapsed * 0.56).toFixed(3),
-          ann_search_ms: +(elapsed * 0.44).toFixed(3),
-          filter_ms: 0.01,
-          total_ms: +elapsed.toFixed(3)
-        }
+        latency_breakdown: { user_tower_ms: +(elapsed * 0.55).toFixed(3), ann_search_ms: +(elapsed * 0.45).toFixed(3), stage2_rerank_ms: 0.0 }
+      };
+    }
+
+    function computeClientColdItem(title, genre, tags) {
+      const t0 = performance.now();
+      const itemVec = buildColdEmbedding(genre, tags);
+      activeQueryCoord = projectQueryTo2D(itemVec);
+      const scored = EMBEDDED_DATA.catalog.map(item => {
+        const sim = dotProduct(itemVec, EMBEDDED_DATA.item_embeddings[String(item.id)]);
+        return { ...item, similarity_score: +sim.toFixed(4), affinity_pct: Math.min(99, Math.max(55, Math.round((sim + 1) * 50))) };
+      }).sort((a, b) => b.similarity_score - a.similarity_score);
+      const elapsed = Math.max(0.14, performance.now() - t0);
+      return {
+        cold_start: "item",
+        custom_title: title || "Untitled Pitch",
+        preferred_genre: genre,
+        preferred_tags: tags,
+        index_backend: "faiss_flat",
+        watch_history: [],
+        recommendations: scored.slice(0, 6),
+        latency_ms: elapsed,
+        latency_breakdown: { user_tower_ms: +(elapsed * 0.6).toFixed(3), ann_search_ms: +(elapsed * 0.4).toFixed(3), stage2_rerank_ms: 0.0 }
       };
     }
 
@@ -537,140 +685,248 @@
       const userId = parseInt(userSelect.value) || 0;
       const exclude = excludeWatched.checked;
       const indexType = indexSelect.value;
+      const divVal = diversitySelect.value;
+      const simCount = (simulatedWatchesByUser[userId] || []).length;
 
-      if (!EMBEDDED_DATA) {
-        const res = await fetch("/api/v1/recommend", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId, top_k: 6, exclude_watched: exclude, index_type: indexType })
-        });
-        renderData(await res.json());
-        return;
-      }
-
-      if (!IS_STATIC_HOST) {
+      if (!IS_STATIC_HOST && simCount === 0) {
         try {
-          const ctrl = new AbortController();
-          const tid = setTimeout(() => ctrl.abort(), 700);
           const res = await fetch("/api/v1/recommend", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user_id: userId, top_k: 6, exclude_watched: exclude, index_type: indexType }),
-            signal: ctrl.signal
+            body: JSON.stringify({
+              user_id: userId,
+              top_k: 6,
+              exclude_watched: exclude,
+              index_type: indexType,
+              use_stage2: divVal !== "off",
+              diversity_lambda: divVal === "off" ? 1.0 : parseFloat(divVal)
+            })
           });
-          clearTimeout(tid);
           if (res.ok) {
-            renderData(await res.json());
+            const data = await res.json();
+            if (EMBEDDED_DATA && EMBEDDED_DATA.user_embeddings[String(userId)]) {
+              activeQueryCoord = projectQueryTo2D(EMBEDDED_DATA.user_embeddings[String(userId)]);
+            }
+            renderData(data);
             return;
           }
         } catch (e) {}
       }
 
-      renderData(computeClientRecommendation(userId, exclude, indexType));
+      renderData(computeClientRecommendation(userId, exclude, indexType, divVal));
     }
 
-    async function executeColdStart() {
+    async function executeColdUser() {
       const genre = coldGenreSelect.value;
-      const tags = Array.from(selectedColdTags);
+      const tags = Array.from(selectedColdUserTags);
       const indexType = coldIndexProxy.value;
 
-      if (!EMBEDDED_DATA) {
-        const res = await fetch("/api/v1/cold-start/user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ preferred_genre: genre, tags: tags, top_k: 6, index_type: indexType })
-        });
-        const data = await res.json();
-        data.username = "New Viewer";
-        data.preferred_tags = tags;
-        data.watch_history = [];
-        data.latency_breakdown = { user_tower_ms: +(data.latency_ms * 0.55).toFixed(3), ann_search_ms: +(data.latency_ms * 0.45).toFixed(3), filter_ms: 0.01 };
-        renderData(data);
-        return;
+      if (!IS_STATIC_HOST) {
+        try {
+          const res = await fetch("/api/v1/cold-start/user", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ preferred_genre: genre, tags: tags, top_k: 6, index_type: indexType })
+          });
+          if (res.ok) {
+            const d = await res.json();
+            d.cold_start = "user";
+            d.username = "New Viewer";
+            d.preferred_tags = tags;
+            d.watch_history = [];
+            renderData(d);
+            return;
+          }
+        } catch (e) {}
+      }
+      renderData(computeClientColdUser(genre, tags, indexType));
+    }
+
+    async function executeColdItem() {
+      const title = coldItemTitleInput.value.trim() || "Untitled Release";
+      const genre = coldItemGenreSelect.value;
+      const tags = Array.from(selectedColdItemTags);
+
+      if (!IS_STATIC_HOST) {
+        try {
+          const res = await fetch("/api/v1/cold-start/item", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: title, genre: genre, tags: tags, top_k: 6 })
+          });
+          if (res.ok) {
+            const d = await res.json();
+            if (d.embedding) activeQueryCoord = projectQueryTo2D(d.embedding);
+            renderData({
+              cold_start: "item",
+              custom_title: title,
+              preferred_genre: genre,
+              preferred_tags: tags,
+              index_backend: "faiss_flat",
+              watch_history: [],
+              recommendations: d.similar_catalog_items,
+              latency_ms: d.latency_ms,
+              latency_breakdown: { user_tower_ms: +(d.latency_ms * 0.6).toFixed(3), ann_search_ms: +(d.latency_ms * 0.4).toFixed(3), stage2_rerank_ms: 0.0 }
+            });
+            return;
+          }
+        } catch (e) {}
+      }
+      renderData(computeClientColdItem(title, genre, tags));
+    }
+
+    function toggleSimulateWatch(itemId, event) {
+      event.stopPropagation();
+      const uid = parseInt(userSelect.value) || 0;
+      if (!simulatedWatchesByUser[uid]) simulatedWatchesByUser[uid] = [];
+      if (!simulatedWatchesByUser[uid].includes(itemId)) {
+        simulatedWatchesByUser[uid].push(itemId);
+      }
+      executeRecommendation();
+    }
+
+    resetSimWatchBtn.addEventListener("click", () => {
+      const uid = parseInt(userSelect.value) || 0;
+      delete simulatedWatchesByUser[uid];
+      executeRecommendation();
+    });
+
+    async function openItemModal(itemOrId) {
+      const item = typeof itemOrId === "number" ? catalogById[itemOrId] : itemOrId;
+      if (!item) return;
+
+      document.getElementById("itemModalBanner").className =
+        `poster-${item.genre} film-grain relative p-6 sm:p-7 border-b border-zinc-800 flex items-end justify-between min-h-[160px]`;
+      document.getElementById("imMeta").textContent = `${item.director || "Feature Film"} · ${item.year} · ${item.genre} · ★ ${item.rating || "8.0"}`;
+      document.getElementById("imTitle").textContent = item.title;
+      document.getElementById("imDesc").textContent = item.description || "Selected candidate feature vector inside Two-Tower latent space.";
+
+      const bCls = GENRE_BADGE_CLASSES[item.genre] || "text-zinc-300 bg-zinc-800 border-zinc-700";
+      document.getElementById("imTags").innerHTML = (item.tags || []).map(t =>
+        `<span class="text-[11px] font-mono px-2.5 py-0.5 rounded-full border ${bCls}">#${t}</span>`
+      ).join("");
+
+      const t0 = performance.now();
+      let sims = [];
+      let lat = 0.08;
+      if (!IS_STATIC_HOST) {
+        try {
+          const r = await fetch(`/api/v1/similar-items/${item.id}?top_k=4`);
+          if (r.ok) {
+            const d = await r.json();
+            sims = d.similar_items;
+            lat = d.latency_ms;
+          }
+        } catch (e) {}
+      }
+      if (sims.length === 0 && EMBEDDED_DATA && EMBEDDED_DATA.item_embeddings[String(item.id)]) {
+        const srcEmb = EMBEDDED_DATA.item_embeddings[String(item.id)];
+        sims = EMBEDDED_DATA.catalog
+          .filter(c => c.id !== item.id)
+          .map(c => {
+            const s = dotProduct(srcEmb, EMBEDDED_DATA.item_embeddings[String(c.id)]);
+            return { ...c, similarity_score: +s.toFixed(4), affinity_pct: Math.min(99, Math.max(55, Math.round((s + 1) * 50))) };
+          })
+          .sort((a, b) => b.similarity_score - a.similarity_score)
+          .slice(0, 4);
+        lat = Math.max(0.06, performance.now() - t0);
       }
 
-      renderData(computeClientColdStart(genre, tags, indexType));
+      document.getElementById("imSimLatency").textContent = `${lat.toFixed(2)} ms`;
+      document.getElementById("imSimilarGrid").innerHTML = sims.map(s => `
+        <button data-jump-id="${s.id}" class="text-left bg-zinc-900/80 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-xl p-3 flex items-center gap-3 transition">
+          <div class="poster-${s.genre} w-9 h-12 rounded border border-white/15 shrink-0"></div>
+          <div class="min-w-0 flex-1">
+            <div class="text-xs font-semibold text-zinc-100 truncate">${s.title}</div>
+            <div class="text-[11px] font-mono text-zinc-500">${s.year} · ${s.genre} · ${s.affinity_pct}% sim</div>
+          </div>
+        </button>
+      `).join("");
+
+      document.getElementById("imSimilarGrid").querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => openItemModal(parseInt(btn.dataset.jumpId)));
+      });
+
+      itemModal.classList.remove("hidden");
     }
 
     function buildMatchReason(item, userGenre, userTags) {
       const shared = (item.tags || []).filter(t => (userTags || []).includes(t));
-      if (shared.length > 0) {
-        return `Matched via "${shared.join(", ")}" latent axis · dot ${item.similarity_score.toFixed(3)}`;
-      }
-      if (item.genre === userGenre) {
-        return `Strong ${userGenre} centroid alignment · dot ${item.similarity_score.toFixed(3)}`;
-      }
+      if (shared.length > 0) return `Matched via "${shared.join(", ")}" latent axis · dot ${item.similarity_score.toFixed(3)}`;
+      if (item.genre === userGenre) return `Strong ${userGenre} centroid alignment · dot ${item.similarity_score.toFixed(3)}`;
       return `Cross-genre semantic bridge · dot ${item.similarity_score.toFixed(3)}`;
     }
 
     function renderData(data) {
       currentRecData = data;
       const tagsText = (data.preferred_tags || []).slice(0, 3).join(", ") || "latent metadata";
-      if (data.cold_start) {
-        document.getElementById("heroEyebrow").textContent = `Cold-Start Zero History · ${data.preferred_genre} + [${tagsText}]`;
+      if (data.cold_start === "item") {
+        document.getElementById("heroEyebrow").textContent = `Zero-Click Cold Item Projection · ${data.preferred_genre} + [${tagsText}]`;
+        document.getElementById("heroTitle").textContent = `Nearest Neighbors to "${data.custom_title}"`;
+        document.getElementById("gridHeading").innerHTML = `Top-6 Item Tower Neighbors <span class="text-zinc-400">(Unseen Item Embedding vs Catalog)</span>`;
+      } else if (data.cold_start === "user") {
+        document.getElementById("heroEyebrow").textContent = `Zero-History Cold User · ${data.preferred_genre} + [${tagsText}]`;
         document.getElementById("heroTitle").textContent = `Curated from Metadata Priors`;
+        document.getElementById("gridHeading").innerHTML = `Top-6 Cold-Start Candidates <span class="text-zinc-400">(Click any card for Item-to-Item similarity)</span>`;
       } else {
         document.getElementById("heroEyebrow").textContent = `${data.preferred_genre} Affinity · Subspace [${tagsText}]`;
         document.getElementById("heroTitle").textContent = `Picked for ${data.username}`;
+        document.getElementById("gridHeading").innerHTML = `Top-6 Candidate Selection <span class="text-zinc-400">(Click card to inspect · Click +Watch to adapt live)</span>`;
       }
 
       document.getElementById("navBackendLabel").textContent = (data.index_backend || "faiss_hnsw").toUpperCase().replace("_", " ");
       document.getElementById("globalLatency").textContent = data.latency_ms.toFixed(2) + " ms";
       document.getElementById("drawerIndexLabel").textContent = data.index_backend || "faiss_hnsw";
 
-      const bd = data.latency_breakdown || { user_tower_ms: data.latency_ms * 0.5, ann_search_ms: data.latency_ms * 0.35, filter_ms: data.latency_ms * 0.15 };
+      const bd = data.latency_breakdown || { user_tower_ms: data.latency_ms * 0.45, ann_search_ms: data.latency_ms * 0.35, stage2_rerank_ms: 0.04 };
       document.getElementById("barUserMs").textContent = `${(bd.user_tower_ms || 0.15).toFixed(3)} ms`;
       document.getElementById("barAnnMs").textContent = `${(bd.ann_search_ms || 0.04).toFixed(3)} ms`;
-      document.getElementById("barFilterMs").textContent = `${(bd.filter_ms || 0.02).toFixed(3)} ms`;
-
-      const tot = Math.max(0.01, (bd.user_tower_ms || 0.15) + (bd.ann_search_ms || 0.04) + (bd.filter_ms || 0.02));
+      document.getElementById("barRerankMs").textContent = `${(bd.stage2_rerank_ms || 0.02).toFixed(3)} ms`;
+      const tot = Math.max(0.01, (bd.user_tower_ms || 0.15) + (bd.ann_search_ms || 0.04) + (bd.stage2_rerank_ms || 0.02));
       document.getElementById("barUserFill").style.width = Math.round(((bd.user_tower_ms || 0.15) / tot) * 100) + "%";
       document.getElementById("barAnnFill").style.width = Math.round(((bd.ann_search_ms || 0.04) / tot) * 100) + "%";
-      document.getElementById("barFilterFill").style.width = Math.max(8, Math.round(((bd.filter_ms || 0.02) / tot) * 100)) + "%";
+      document.getElementById("barRerankFill").style.width = Math.max(6, Math.round(((bd.stage2_rerank_ms || 0.02) / tot) * 100)) + "%";
 
       currentHistoryIds = new Set((data.watch_history || []).map(m => m.id));
       currentRecRanks = {};
       (data.recommendations || []).forEach((m, idx) => { currentRecRanks[m.id] = idx + 1; });
 
-      // Horizontal Watch History Chips
+      resetSimWatchBtn.classList.toggle("hidden", !(data.simulated_count > 0));
+
       if (data.watch_history && data.watch_history.length > 0) {
         document.getElementById("historyCountLabel").textContent = `${data.watch_history.length} titles`;
         historyList.innerHTML = data.watch_history.map(m => `
-          <div class="shrink-0 bg-zinc-900/80 border border-zinc-800/90 rounded-xl px-3.5 py-2.5 flex items-center gap-3 min-w-[195px]">
-            <div class="poster-${m.genre} w-7 h-9 rounded border border-white/10 shrink-0"></div>
+          <button data-open-id="${m.id}" class="text-left shrink-0 bg-zinc-900/80 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl px-3.5 py-2.5 flex items-center gap-3 min-w-[195px] transition">
+            <div class="poster-${m.genre} w-7 h-9 rounded border border-white/15 shrink-0"></div>
             <div class="min-w-0">
               <div class="text-xs font-semibold text-zinc-100 truncate max-w-[130px]">${m.title}</div>
               <div class="text-[11px] font-mono text-zinc-500">${m.year} · ${m.genre}</div>
             </div>
-          </div>
+          </button>
         `).join("");
+        historyList.querySelectorAll("button").forEach(b => b.addEventListener("click", () => openItemModal(parseInt(b.dataset.openId))));
       }
 
-      // Editorial Poster Cards Grid
       recommendationsList.innerHTML = data.recommendations.map((m, idx) => {
         const reason = buildMatchReason(m, data.preferred_genre, data.preferred_tags);
         const logline = m.description || `Feature retrieval aligned with user latent context.`;
         const genreBadgeCls = GENRE_BADGE_CLASSES[m.genre] || "text-zinc-300 bg-zinc-800 border-zinc-700";
+        const watchBtn = activeMode === "existing"
+          ? `<button data-watch-id="${m.id}" class="watch-btn text-[11px] font-mono text-zinc-300 hover:text-zinc-950 hover:bg-zinc-100 bg-zinc-900 border border-zinc-700 px-2 py-0.5 rounded-full transition shrink-0">+ Watch</button>`
+          : "";
         return `
-          <article class="poster-card rounded-2xl overflow-hidden flex flex-col">
+          <article data-card-id="${m.id}" class="poster-card rounded-2xl overflow-hidden flex flex-col cursor-pointer">
             <div class="poster-${m.genre} relative h-44 p-5 flex flex-col justify-between film-grain border-b border-zinc-800/80">
               <div class="relative z-10 flex items-center justify-between">
-                <span class="font-mono text-[11px] text-zinc-100 bg-black/55 backdrop-blur-sm border border-white/15 px-2 py-0.5 rounded">
-                  #0${idx + 1}
-                </span>
-                <span class="font-mono text-[11px] font-semibold text-white bg-white/15 backdrop-blur-sm border border-white/20 px-2.5 py-0.5 rounded-full">
-                  ${m.affinity_pct}% match
-                </span>
+                <span class="font-mono text-[11px] text-zinc-100 bg-black/55 backdrop-blur-sm border border-white/15 px-2 py-0.5 rounded">#0${idx + 1}</span>
+                <span class="font-mono text-[11px] font-semibold text-white bg-white/15 backdrop-blur-sm border border-white/20 px-2.5 py-0.5 rounded-full">${m.affinity_pct}% match</span>
               </div>
-
               <div class="relative z-10">
                 <div class="text-[11px] font-mono text-zinc-200/90 flex items-center justify-between">
                   <span>${m.director || "Feature Film"} · ${m.year}</span>
                   <span class="text-amber-300 font-semibold">★ ${m.rating || "8.0"}</span>
                 </div>
-                <h3 class="text-xl font-bold text-white tracking-tight leading-snug mt-0.5 drop-shadow-sm">
-                  ${m.title}
-                </h3>
+                <h3 class="text-xl font-bold text-white tracking-tight leading-snug mt-0.5 drop-shadow-sm">${m.title}</h3>
               </div>
             </div>
 
@@ -679,19 +935,26 @@
                 <p class="text-xs text-zinc-400 leading-relaxed line-clamp-2">${logline}</p>
                 <p class="text-[11px] font-mono text-zinc-300/90">${reason}</p>
               </div>
-
-              <div class="pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-500">
-                <span class="truncate">${m.tags.slice(0, 3).join(" · ")}</span>
-                <span class="${genreBadgeCls} border px-2 py-0.5 rounded-full text-[10px] shrink-0 ml-2">${m.genre}</span>
+              <div class="pt-3 border-t border-zinc-800/80 flex items-center justify-between gap-2 text-[11px] font-mono text-zinc-500">
+                <span class="truncate">${m.tags.slice(0, 2).join(" · ")}</span>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  ${watchBtn}
+                  <span class="${genreBadgeCls} border px-2 py-0.5 rounded-full text-[10px]">${m.genre}</span>
+                </div>
               </div>
             </div>
           </article>
         `;
       }).join("");
 
-      if (!internalsDrawer.classList.contains("hidden")) {
-        drawLatentMap();
-      }
+      recommendationsList.querySelectorAll("article").forEach(card => {
+        card.addEventListener("click", () => openItemModal(parseInt(card.dataset.cardId)));
+      });
+      recommendationsList.querySelectorAll(".watch-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => toggleSimulateWatch(parseInt(btn.dataset.watchId), e));
+      });
+
+      if (!internalsDrawer.classList.contains("hidden")) drawLatentMap();
     }
 
     function drawLatentMap() {
@@ -699,7 +962,6 @@
       const w = canvas.width;
       const h = canvas.height;
       const pad = 26;
-
       ctx.clearRect(0, 0, w, h);
 
       ctx.strokeStyle = "rgba(161, 161, 170, 0.12)";
@@ -712,11 +974,32 @@
       const mapX = x => pad + ((x + 1) / 2) * (w - 2 * pad);
       const mapY = y => pad + ((1 - y) / 2) * (h - 2 * pad);
 
+      // Compute pixel coords first
       latentItems.forEach(item => {
         item._px = mapX(item.x);
         item._py = mapY(item.y);
-        if (currentHistoryIds.has(item.id) || currentRecRanks[item.id]) return;
+      });
 
+      // Vector rays from Active Query Coord to Top-6 candidates
+      if (activeQueryCoord) {
+        const qx = mapX(activeQueryCoord.x);
+        const qy = mapY(activeQueryCoord.y);
+        ctx.save();
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = "rgba(250, 204, 21, 0.35)";
+        ctx.lineWidth = 1.2;
+        latentItems.forEach(item => {
+          if (!currentRecRanks[item.id]) return;
+          ctx.beginPath();
+          ctx.moveTo(qx, qy);
+          ctx.lineTo(item._px, item._py);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+
+      latentItems.forEach(item => {
+        if (currentHistoryIds.has(item.id) || currentRecRanks[item.id]) return;
         ctx.beginPath();
         ctx.arc(item._px, item._py, 3.6, 0, Math.PI * 2);
         ctx.fillStyle = GENRE_COLORS[item.genre] || "#71717a";
@@ -748,7 +1031,6 @@
         ctx.strokeStyle = GENRE_COLORS[item.genre] || "#52525b";
         ctx.stroke();
 
-        // Offset label vertically if another rank label is close nearby
         let labelY = item._py - 11;
         for (const pt of placedLabels) {
           if (Math.abs(pt.x - item._px) < 18 && Math.abs(pt.y - labelY) < 12) {
@@ -757,27 +1039,41 @@
           }
         }
         placedLabels.push({ x: item._px, y: labelY });
-
         ctx.fillStyle = "#fafafa";
         ctx.font = "600 9px JetBrains Mono, monospace";
         ctx.textAlign = "center";
         ctx.fillText("#" + rank, item._px, labelY);
       });
+
+      if (activeQueryCoord) {
+        const qx = mapX(activeQueryCoord.x);
+        const qy = mapY(activeQueryCoord.y);
+        ctx.fillStyle = "#fde047";
+        ctx.font = "bold 14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("★", qx, qy);
+        ctx.font = "600 9px JetBrains Mono, monospace";
+        ctx.fillText("QUERY", qx, qy + 13);
+        ctx.textBaseline = "alphabetic";
+      }
     }
 
-    canvas.addEventListener("mousemove", (e) => {
+    function findHoveredItem(e) {
       const rect = canvas.getBoundingClientRect();
       const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
       const my = (e.clientY - rect.top) * (canvas.height / rect.height);
-
-      let closest = null;
-      let minDist = 14;
+      let closest = null, minDist = 14;
       for (const item of latentItems) {
         if (item._px === undefined) continue;
         const d = Math.hypot(mx - item._px, my - item._py);
         if (d < minDist) { minDist = d; closest = item; }
       }
+      return { closest, rect };
+    }
 
+    canvas.addEventListener("mousemove", (e) => {
+      const { closest, rect } = findHoveredItem(e);
       if (closest) {
         document.getElementById("ttTitle").textContent = closest.title;
         document.getElementById("ttMeta").textContent = `${closest.genre} · ${closest.year} · ★${closest.rating}`;
@@ -788,9 +1084,13 @@
         tooltip.classList.add("hidden");
       }
     });
+    canvas.addEventListener("click", (e) => {
+      const { closest } = findHoveredItem(e);
+      if (closest) openItemModal(closest.id);
+    });
     canvas.addEventListener("mouseleave", () => tooltip.classList.add("hidden"));
 
-    exportBtn.addEventListener("click", () => {
+    document.getElementById("exportBtn").addEventListener("click", () => {
       if (!currentRecData) return;
       const blob = new Blob([JSON.stringify(currentRecData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -802,40 +1102,50 @@
     });
 
     async function bootstrap() {
-      renderTagChips();
+      renderTagChipGroup("tagChipsUserContainer", selectedColdUserTags, () => activeMode === "coldUser" && executeColdUser());
+      renderTagChipGroup("tagChipsItemContainer", selectedColdItemTags, () => activeMode === "coldItem" && executeColdItem());
 
       if (!EMBEDDED_DATA) {
         const [uRes, mapRes, metRes] = await Promise.all([
           fetch("/api/v1/users"),
           fetch("/api/v1/latent-map"),
-          fetch("/api/v1/metrics?k=10&index_type=hnsw")
+          fetch("/api/v1/metrics?k=10&index_type=hnsw&use_stage2=true")
         ]);
         catalogUsers = (await uRes.json()).slice(0, 30);
-        latentItems = (await mapRes.json()).items;
+        const mapJson = await mapRes.json();
+        latentItems = mapJson.items;
+        pcaProj = mapJson.pca_projection;
         const met = await metRes.json();
         document.getElementById("kpiHit10").textContent = (met["HitRate@10"] * 100).toFixed(1) + "%";
         document.getElementById("footerHit10").textContent = (met["HitRate@10"] * 100).toFixed(1) + "%";
         document.getElementById("kpiHit5").textContent = (met["HitRate@5"] * 100).toFixed(1) + "%";
         document.getElementById("kpiNdcg10").textContent = met["NDCG@10"].toFixed(3);
         document.getElementById("kpiMrr10").textContent = met["MRR@10"].toFixed(3);
-      } else if (EMBEDDED_DATA.benchmark) {
-        const bm = EMBEDDED_DATA.benchmark;
-        document.getElementById("kpiHit10").textContent = (bm["HitRate@10"] * 100).toFixed(1) + "%";
-        document.getElementById("footerHit10").textContent = (bm["HitRate@10"] * 100).toFixed(1) + "%";
-        document.getElementById("kpiHit5").textContent = (bm["HitRate@5"] * 100).toFixed(1) + "%";
-        document.getElementById("kpiNdcg10").textContent = bm["NDCG@10"].toFixed(3);
-        document.getElementById("kpiMrr10").textContent = bm["MRR@10"].toFixed(3);
+      } else {
+        if (EMBEDDED_DATA.benchmark) {
+          const bm = EMBEDDED_DATA.benchmark;
+          document.getElementById("kpiHit10").textContent = (bm["HitRate@10"] * 100).toFixed(1) + "%";
+          document.getElementById("footerHit10").textContent = (bm["HitRate@10"] * 100).toFixed(1) + "%";
+          document.getElementById("kpiHit5").textContent = (bm["HitRate@5"] * 100).toFixed(1) + "%";
+          document.getElementById("kpiNdcg10").textContent = bm["NDCG@10"].toFixed(3);
+          document.getElementById("kpiMrr10").textContent = bm["MRR@10"].toFixed(3);
+        }
+        if (EMBEDDED_DATA.movielens) {
+          const ml = EMBEDDED_DATA.movielens;
+          document.getElementById("ml100kBanner").classList.remove("hidden");
+          document.getElementById("ml100kStats").textContent = `Hit@10: ${(ml["HitRate@10"] * 100).toFixed(1)}% · NDCG@10: ${ml["NDCG@10"].toFixed(3)}`;
+        }
       }
 
-      userSelect.innerHTML = catalogUsers.map(u =>
-        `<option value="${u.user_id}">${u.username} · ${u.primary_genre}</option>`
-      ).join("");
-
+      userSelect.innerHTML = catalogUsers.map(u => `<option value="${u.user_id}">${u.username} · ${u.primary_genre}</option>`).join("");
       userSelect.addEventListener("change", () => activeMode === "existing" && executeRecommendation());
       indexSelect.addEventListener("change", () => activeMode === "existing" && executeRecommendation());
+      diversitySelect.addEventListener("change", () => activeMode === "existing" && executeRecommendation());
       excludeWatched.addEventListener("change", () => activeMode === "existing" && executeRecommendation());
-      coldGenreSelect.addEventListener("change", () => activeMode === "cold" && executeColdStart());
-      coldIndexProxy.addEventListener("change", () => activeMode === "cold" && executeColdStart());
+      coldGenreSelect.addEventListener("change", () => activeMode === "coldUser" && executeColdUser());
+      coldIndexProxy.addEventListener("change", () => activeMode === "coldUser" && executeColdUser());
+      document.getElementById("projectColdItemBtn").addEventListener("click", executeColdItem);
+      coldItemGenreSelect.addEventListener("change", () => activeMode === "coldItem" && executeColdItem());
 
       executeRecommendation();
     }
