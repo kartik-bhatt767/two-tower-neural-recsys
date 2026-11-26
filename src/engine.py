@@ -10,6 +10,7 @@ from src.data_loader import (
     build_catalog_tag_matrix,
     build_tag_vocabulary,
     encode_tags_multihot,
+    extract_title_lexical_signals,
     generate_user_data,
     load_catalog,
 )
@@ -33,7 +34,7 @@ class RecommendationEngine:
     """
     Production Two-Stage Neural Candidate Retrieval & Re-Ranking Engine backed by FAISS.
     Stage 1: Decoupled User/Item Dual Towers + FAISS HNSW/IVF-Flat/FlatIP MIPS search.
-    Stage 2: Cross-Feature Fine Re-Ranker + Maximal Marginal Relevance (MMR) diversity.
+    Stage 2: Vectorized Cross-Feature Fine Re-Ranker + Maximal Marginal Relevance (MMR).
     """
 
     def __init__(
@@ -194,9 +195,12 @@ class RecommendationEngine:
         movie: Dict[str, Any],
         stage1_score: float,
         stage2_score: Optional[float] = None,
+        stage1_rank: Optional[int] = None,
+        final_rank: Optional[int] = None,
     ) -> Dict[str, Any]:
         blended = stage2_score if stage2_score is not None else (stage1_score + 1.0) * 0.5
         affinity_pct = int(min(99, max(5, round(float(blended) * 100.0))))
+        rank_delta = (stage1_rank - final_rank) if (stage1_rank is not None and final_rank is not None) else 0
         return {
             "id": movie["id"],
             "title": movie["title"],
@@ -208,6 +212,8 @@ class RecommendationEngine:
             "description": movie.get("description", ""),
             "similarity_score": round(float(stage1_score), 4),
             "stage2_score": round(float(blended), 4),
+            "stage1_rank": stage1_rank,
+            "rank_delta": rank_delta,
             "affinity_pct": affinity_pct,
         }
 
@@ -220,8 +226,11 @@ class RecommendationEngine:
         use_stage2: bool = True,
         diversity_lambda: float = 0.88,
     ) -> Dict[str, Any]:
+        if user_idx < 0 or user_idx >= len(self.users):
+            raise KeyError(f"User ID {user_idx} not found (valid range: 0..{len(self.users) - 1}).")
+
         t0 = time.perf_counter()
-        user = self.users[user_idx % len(self.users)]
+        user = self.users[user_idx]
         watched_set = set(user["history_item_ids"])
         vec_index = self._resolve_index(index_type)
         history_movies = [
@@ -262,9 +271,15 @@ class RecommendationEngine:
                 history_movies=history_movies,
             )
             stage2_rerank_ms = (time.perf_counter() - t_r0) * 1000.0
-            recommendations = [self._format_candidate(m, s1, s2) for m, s1, s2 in reranked]
+            recommendations = [
+                self._format_candidate(m, s1, s2, stage1_rank=r1, final_rank=rf)
+                for m, s1, s2, r1, rf in reranked
+            ]
         else:
-            recommendations = [self._format_candidate(m, s1) for m, s1 in stage1_filtered[:top_k]]
+            recommendations = [
+                self._format_candidate(m, s1, stage1_rank=r1, final_rank=r1)
+                for r1, (m, s1) in enumerate(stage1_filtered[:top_k], start=1)
+            ]
 
         total_ms = (time.perf_counter() - t0) * 1000.0
 
@@ -292,7 +307,7 @@ class RecommendationEngine:
     def recommend_similar_items(self, item_id: int, top_k: int = 5) -> Dict[str, Any]:
         """Retrieve nearest item neighbors (Item-to-Item MIPS via FAISS FlatIP)."""
         if item_id not in self.id_to_pos:
-            raise ValueError(f"Item ID {item_id} not found in catalog.")
+            raise KeyError(f"Item ID {item_id} not found in catalog.")
 
         t0 = time.perf_counter()
         pos = self.id_to_pos[item_id]
@@ -366,16 +381,17 @@ class RecommendationEngine:
     def match_cold_start_item(
         self, title: str, genre: str, tags: List[str], top_k: int = 6
     ) -> Dict[str, Any]:
-        """Project a brand-new unseen catalog item from metadata and retrieve nearest items."""
+        """Project a brand-new unseen catalog item from title + genre + tags and retrieve nearest items."""
         t0 = time.perf_counter()
         genre_idx = GENRES.index(genre) if genre in GENRES else 0
-        tag_vec = encode_tags_multihot(tags, self.tag_vocab)
+        merged_tags, lex_scores = extract_title_lexical_signals(title, tags, self.catalog, self.tag_vocab)
+        tag_vec = encode_tags_multihot(merged_tags, self.tag_vocab)
 
         if self.torch_model is not None and TORCH_AVAILABLE:
             with torch.no_grad():
                 g_t = torch.tensor([genre_idx], dtype=torch.long)
                 t_t = torch.tensor(tag_vec.reshape(1, -1), dtype=torch.float32)
-                item_vec = self.torch_model.item_tower.encode_cold_item(g_t, t_t).cpu().numpy()[0]
+                tower_vec = self.torch_model.item_tower.encode_cold_item(g_t, t_t).cpu().numpy()[0]
         else:
             same_genre_pos = [idx for idx, it in enumerate(self.catalog) if it["genre"] == genre]
             genre_vec = (
@@ -385,36 +401,77 @@ class RecommendationEngine:
             )
             tag_sim = self.item_tag_matrix @ tag_vec
             weighted = np.dot(tag_sim, self.item_embeddings)
-            item_vec = 0.7 * genre_vec + 0.3 * weighted
-            item_vec /= max(np.linalg.norm(item_vec), 1e-8)
+            tower_vec = 0.65 * genre_vec + 0.35 * weighted
+            tower_vec /= max(np.linalg.norm(tower_vec), 1e-8)
 
-        nearest = self.indexes["flat"].search(item_vec, top_k=top_k)
-        similar_items = [self._format_candidate(self.item_id_map[item_id], score) for item_id, score in nearest]
+        # Blend neural Item Tower vector with semantic centroid of title-keyword matches
+        if float(np.max(lex_scores)) > 0.0:
+            lex_centroid = np.dot(lex_scores, self.item_embeddings)
+            lex_centroid /= max(float(np.linalg.norm(lex_centroid)), 1e-8)
+            item_vec = 0.55 * tower_vec + 0.45 * lex_centroid
+            item_vec /= max(float(np.linalg.norm(item_vec)), 1e-8)
+        else:
+            item_vec = tower_vec
+
+        # Fuse FAISS dot product with exact lexical match strength on title keywords
+        raw_sims = (self.item_embeddings @ item_vec).astype(np.float32)
+        blended_scores = 0.72 * ((raw_sims + 1.0) * 0.5) + 0.28 * lex_scores
+        top_pos = np.argsort(blended_scores)[::-1][:top_k]
+
+        similar_items = [
+            self._format_candidate(self.catalog[int(p)], float(raw_sims[p]), float(blended_scores[p]))
+            for p in top_pos
+        ]
         return {
             "title": title,
             "genre": genre,
-            "tags": tags,
+            "tags": merged_tags,
             "embedding": [round(float(x), 4) for x in item_vec],
             "similar_catalog_items": similar_items,
             "latency_ms": round((time.perf_counter() - t0) * 1000.0, 3),
         }
 
+    def browse_catalog(
+        self,
+        genre: Optional[str] = None,
+        q: Optional[str] = None,
+        limit: int = 60,
+        offset: int = 0,
+    ) -> Dict[str, Any]:
+        """Search and paginate the catalog across genres, titles, directors, tags, and descriptions."""
+        filtered = self.catalog
+        if genre:
+            g_lower = genre.strip().lower()
+            filtered = [it for it in filtered if it.get("genre", "").lower() == g_lower]
+        if q:
+            q_lower = q.strip().lower()
+            filtered = [
+                it
+                for it in filtered
+                if q_lower in it.get("title", "").lower()
+                or q_lower in it.get("director", "").lower()
+                or q_lower in it.get("genre", "").lower()
+                or q_lower in it.get("description", "").lower()
+                or any(q_lower in t.lower() for t in it.get("tags", []))
+            ]
+        page = filtered[offset : offset + limit]
+        return {"total": len(filtered), "offset": offset, "limit": limit, "items": page}
+
     def get_latent_space_map(self) -> Dict[str, Any]:
         """Project catalog item embeddings into 2D PCA coordinates + export SVD basis."""
         coords, mean_vec, basis, scale = project_embeddings_2d_with_basis(self.item_embeddings)
-        points = []
-        for idx, item in enumerate(self.catalog):
-            points.append(
-                {
-                    "id": item["id"],
-                    "title": item["title"],
-                    "genre": item["genre"],
-                    "year": item["year"],
-                    "rating": item.get("rating", 8.0),
-                    "x": round(float(coords[idx, 0]), 4),
-                    "y": round(float(coords[idx, 1]), 4),
-                }
-            )
+        points = [
+            {
+                "id": item["id"],
+                "title": item["title"],
+                "genre": item["genre"],
+                "year": item["year"],
+                "rating": item.get("rating", 8.0),
+                "x": round(float(coords[idx, 0]), 4),
+                "y": round(float(coords[idx, 1]), 4),
+            }
+            for idx, item in enumerate(self.catalog)
+        ]
         return {
             "genres": GENRES,
             "total_items": len(points),
@@ -456,7 +513,7 @@ class RecommendationEngine:
                 diversity_lambda=diversity_lambda,
                 history_movies=hist_movies,
             )
-            return [m["id"] for m, _, _ in reranked]
+            return [m["id"] for m, *_ in reranked]
 
         metrics = evaluate_ranking_strategy(self.users, _ranker, k=k)
         metrics["index_backend"] = vec_index.backend_name

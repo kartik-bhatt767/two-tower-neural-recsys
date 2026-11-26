@@ -13,8 +13,8 @@
       "NDCG@5": 0.0697,
       "NDCG@10": 0.1036,
       "MRR@10": 0.1174,
-      "P50_Latency_ms": 0.0631,
-      "P95_Latency_ms": 0.0961,
+      "P50_Latency_ms": 0.059,
+      "P95_Latency_ms": 0.0943,
       "model": "Random Baseline",
       "backend": "random"
     },
@@ -26,8 +26,8 @@
       "NDCG@5": 0.0711,
       "NDCG@10": 0.1036,
       "MRR@10": 0.1121,
-      "P50_Latency_ms": 0.0072,
-      "P95_Latency_ms": 0.008,
+      "P50_Latency_ms": 0.0052,
+      "P95_Latency_ms": 0.0061,
       "model": "Global Popularity",
       "backend": "popularity"
     },
@@ -39,8 +39,8 @@
       "NDCG@5": 0.4323,
       "NDCG@10": 0.5435,
       "MRR@10": 0.5228,
-      "P50_Latency_ms": 0.4822,
-      "P95_Latency_ms": 0.7199,
+      "P50_Latency_ms": 0.5594,
+      "P95_Latency_ms": 1.0812,
       "model": "Two-Tower (FAISS_IVF)",
       "backend": "faiss_ivf"
     },
@@ -52,8 +52,8 @@
       "NDCG@5": 0.4323,
       "NDCG@10": 0.5459,
       "MRR@10": 0.5239,
-      "P50_Latency_ms": 0.2565,
-      "P95_Latency_ms": 0.5338,
+      "P50_Latency_ms": 0.2495,
+      "P95_Latency_ms": 0.4376,
       "model": "Two-Tower (FAISS_HNSW)",
       "backend": "faiss_hnsw"
     },
@@ -65,8 +65,8 @@
       "NDCG@5": 0.4323,
       "NDCG@10": 0.5459,
       "MRR@10": 0.5239,
-      "P50_Latency_ms": 0.4139,
-      "P95_Latency_ms": 0.5242,
+      "P50_Latency_ms": 0.2155,
+      "P95_Latency_ms": 0.4816,
       "model": "Two-Tower (FAISS_FLAT)",
       "backend": "faiss_flat"
     },
@@ -78,8 +78,8 @@
       "NDCG@5": 0.4982,
       "NDCG@10": 0.5846,
       "MRR@10": 0.546,
-      "P50_Latency_ms": 2.0768,
-      "P95_Latency_ms": 4.5634,
+      "P50_Latency_ms": 0.5121,
+      "P95_Latency_ms": 0.7854,
       "model": "Two-Stage (HNSW + Re-Ranker)",
       "backend": "two_stage_hnsw_rerank"
     }

@@ -13,6 +13,9 @@ from typing import Dict, List, Tuple
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import requests
 import torch
@@ -247,7 +250,61 @@ def run_movielens_eval(epochs: int = 18, batch_size: int = 256, lr: float = 0.00
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
     print(f"Saved MovieLens-100K benchmark to {out_path}")
+    _plot_movielens_chart(summary, os.path.join(root_dir, "assets", "movielens_benchmark.png"))
     return payload
+
+
+def _plot_movielens_chart(results: List[Dict], out_path: str) -> None:
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    labels = [r["model"].replace("Two-Tower ", "TT ") for r in results]
+    hit5 = [r["HitRate@5"] for r in results]
+    hit10 = [r["HitRate@10"] for r in results]
+    ndcg10 = [r["NDCG@10"] for r in results]
+
+    x = np.arange(len(labels))
+    width = 0.25
+
+    fig, ax = plt.subplots(figsize=(9.5, 4.8), dpi=150)
+    fig.patch.set_facecolor("#09090b")
+    ax.set_facecolor("#111114")
+
+    b1 = ax.bar(x - width, hit5, width, label="HitRate@5", color="#fb923c", alpha=0.92)
+    b2 = ax.bar(x, hit10, width, label="HitRate@10", color="#38bdf8", alpha=0.92)
+    b3 = ax.bar(x + width, ndcg10, width, label="NDCG@10", color="#34d399", alpha=0.92)
+
+    for bars in (b1, b2, b3):
+        for bar in bars:
+            h = bar.get_height()
+            ax.annotate(
+                f"{h:.3f}",
+                xy=(bar.get_x() + bar.get_width() / 2, h),
+                xytext=(0, 3),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+                fontsize=7.5,
+                color="#e4e4e7",
+            )
+
+    ax.set_title(
+        "MovieLens-100K Validation (934 Users · 1,682 Items · Chronological Holdout)",
+        color="#fafafa",
+        fontsize=11.5,
+        fontweight="bold",
+        pad=14,
+    )
+    ax.set_ylabel("Score (Higher is Better)", color="#a1a1aa", fontsize=10)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, color="#e4e4e7", fontsize=8.5, rotation=8)
+    ax.set_ylim(0, max(hit10) * 1.24)
+    ax.tick_params(colors="#a1a1aa")
+    ax.grid(axis="y", color="#27272a", linestyle="--", alpha=0.7)
+    ax.legend(facecolor="#18181b", edgecolor="#27272a", labelcolor="#fafafa", loc="upper left")
+
+    plt.tight_layout()
+    plt.savefig(out_path, facecolor=fig.get_facecolor(), edgecolor="none")
+    plt.close()
+    print(f"Saved MovieLens chart to {out_path}")
 
 
 if __name__ == "__main__":

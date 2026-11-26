@@ -65,7 +65,7 @@ def run_benchmark(k: int = 10) -> Dict[str, Any]:
                 diversity_lambda=0.92,
                 history_movies=hist_movies,
             )
-            return [m["id"] for m, _, _ in reranked]
+            return [m["id"] for m, *_ in reranked]
 
         return _ranker
 

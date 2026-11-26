@@ -13,8 +13,8 @@
       "NDCG@5": 0.0028,
       "NDCG@10": 0.0049,
       "MRR@10": 0.0054,
-      "P50_Latency_ms": 0.1955,
-      "P95_Latency_ms": 0.233,
+      "P50_Latency_ms": 0.1262,
+      "P95_Latency_ms": 0.145,
       "model": "Random Baseline"
     },
     {
@@ -25,8 +25,8 @@
       "NDCG@5": 0.0352,
       "NDCG@10": 0.047,
       "MRR@10": 0.0514,
-      "P50_Latency_ms": 0.0459,
-      "P95_Latency_ms": 0.0926,
+      "P50_Latency_ms": 0.0465,
+      "P95_Latency_ms": 0.0782,
       "model": "Global Popularity"
     },
     {
@@ -37,8 +37,8 @@
       "NDCG@5": 0.0504,
       "NDCG@10": 0.0695,
       "MRR@10": 0.073,
-      "P50_Latency_ms": 0.051,
-      "P95_Latency_ms": 0.1432,
+      "P50_Latency_ms": 0.0487,
+      "P95_Latency_ms": 0.1257,
       "model": "Two-Tower (FAISS_HNSW)"
     },
     {
@@ -49,8 +49,8 @@
       "NDCG@5": 0.0501,
       "NDCG@10": 0.0688,
       "MRR@10": 0.0723,
-      "P50_Latency_ms": 0.0853,
-      "P95_Latency_ms": 0.2534,
+      "P50_Latency_ms": 0.045,
+      "P95_Latency_ms": 0.1299,
       "model": "Two-Tower (FAISS_FLAT)"
     }
   ]

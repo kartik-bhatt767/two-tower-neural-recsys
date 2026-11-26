@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional
 
 from src.data_loader import GENRES
 from src.engine import RecommendationEngine
@@ -109,6 +110,8 @@ def get_recommendations(req: RecommendRequest) -> Dict[str, Any]:
             use_stage2=req.use_stage2,
             diversity_lambda=req.diversity_lambda,
         )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -117,8 +120,18 @@ def get_recommendations(req: RecommendRequest) -> Dict[str, Any]:
 def get_similar_items(item_id: int, top_k: int = Query(default=5, ge=1, le=20)) -> Dict[str, Any]:
     try:
         return rec_engine.recommend_similar_items(item_id=item_id, top_k=top_k)
-    except ValueError as exc:
+    except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/catalog", tags=["Catalog"])
+def browse_catalog(
+    genre: Optional[str] = Query(default=None, description="Filter catalog by genre"),
+    q: Optional[str] = Query(default=None, description="Search keyword across title, director, or tags"),
+    limit: int = Query(default=60, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> Dict[str, Any]:
+    return rec_engine.browse_catalog(genre=genre, q=q, limit=limit, offset=offset)
 
 
 @app.post("/api/v1/cold-start/user", tags=["Cold-Start Inference"])

@@ -82,6 +82,8 @@ Evaluated on **934 users**, **1,682 movies**, **53,473 chronological train inter
 
 *MovieLens-100K Takeaway*: **+47.8% HitRate@10** and **+47.9% NDCG@10** relative lift over Global Popularity in **0.14 ms** P95 retrieval latency.
 
+![MovieLens-100K Validation Chart](assets/movielens_benchmark.png)
+
 ### Training Convergence
 ![Training Loss Curve](assets/training_loss.png)
 
@@ -104,14 +106,18 @@ pytest tests/ -v
 python benchmarks/evaluate.py
 python benchmarks/eval_movielens.py
 
-# Launch FastAPI server + interactive Editorial Cinema workbench
+# Launch with Docker Compose
+docker compose up --build
+
+# Or launch FastAPI locally + interactive Editorial Cinema workbench
 uvicorn api.main:app --port 8001 --reload
 ```
 
 | Method | Endpoint | Purpose |
 |---|---|---|
 | `GET` | `/health` | Service status & FAISS HNSW/IVF/FlatIP index stats |
-| `POST` | `/api/v1/recommend` | Two-Stage retrieval + MMR diversity + stage timings |
+| `GET` | `/api/v1/catalog` | Browse, filter by genre, and keyword-search all 60 items (`?genre=&q=`) |
+| `POST` | `/api/v1/recommend` | Two-Stage retrieval + MMR diversity + stage timings + `rank_delta` |
 | `GET` | `/api/v1/similar-items/{item_id}` | Item-to-Item FAISS inner-product neighbors |
 | `POST` | `/api/v1/cold-start/user` | Zero-history metadata user recommendations |
 | `POST` | `/api/v1/cold-start/item` | Zero-click new item projection & neighbor matching |

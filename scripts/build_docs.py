@@ -115,6 +115,12 @@ def render_html(embedded_payload_json: str) -> str:
           <button id="tabColdItem" class="px-3 py-1 rounded-full text-zinc-400 hover:text-zinc-200 transition">Unseen Film</button>
         </div>
 
+        <button id="openCatalogBtn" title="Search all 60 catalog titles (/)" class="inline-flex items-center gap-1.5 text-xs font-mono text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-3 py-1.5 rounded-full transition">
+          <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span class="hidden md:inline">Browse 60</span>
+          <kbd class="hidden md:inline text-[10px] text-zinc-500 border border-zinc-700 px-1 rounded">/</kbd>
+        </button>
+
         <button id="openDrawerBtn" class="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-200 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-3.5 py-1.5 rounded-full transition">
           <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span class="hidden sm:inline">Model Internals</span>
@@ -284,6 +290,10 @@ def render_html(embedded_payload_json: str) -> str:
           <span class="text-zinc-400">MovieLens-100K (Real Ratings)</span>
           <span id="ml100kStats" class="text-sky-300">Hit@10: — · NDCG@10: —</span>
         </div>
+        <div id="drawerBaselineBox" class="hidden bg-zinc-900/60 border border-zinc-800 rounded-xl p-3.5 space-y-2">
+          <div class="text-[11px] font-mono uppercase tracking-wider text-zinc-500">Holdout Hit@10 Comparison</div>
+          <div id="drawerBaselineBars" class="space-y-1.5 text-[11px] font-mono"></div>
+        </div>
       </div>
 
       <!-- Stage Latency Breakdown -->
@@ -339,6 +349,19 @@ def render_html(embedded_payload_json: str) -> str:
         </div>
       </div>
     </aside>
+  </div>
+
+  <!-- Spotlight "Jump to Film" Search Modal (60 Catalog Titles) -->
+  <div id="catalogModal" class="fixed inset-0 z-50 hidden flex items-start justify-center pt-16 p-4">
+    <div id="catalogModalBackdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+    <div class="relative z-10 w-full max-w-xl bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+      <div class="p-3.5 border-b border-zinc-800 flex items-center gap-2.5">
+        <svg class="w-4 h-4 text-zinc-500 ml-1 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="catalogSearchInput" type="text" placeholder="Search 60 films by title, director, genre, or tag..." class="w-full bg-transparent text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none" />
+        <button id="closeCatalogModalBtn" class="text-xs font-mono text-zinc-400 hover:text-white border border-zinc-800 px-2 py-0.5 rounded">ESC</button>
+      </div>
+      <div id="catalogSearchResults" class="max-h-96 overflow-y-auto divide-y divide-zinc-900 p-2"></div>
+    </div>
   </div>
 
   <!-- Item Detail & "More Like This" Modal -->
@@ -527,7 +550,7 @@ def render_html(embedded_payload_json: str) -> str:
       (historyMovies || []).forEach(hm => (hm.tags || []).forEach(t => hSet.add(t.toLowerCase())));
       const combined = new Set([...uSet, ...hSet]);
 
-      const withS2 = scoredCandidates.map(cand => {{
+      const withS2 = scoredCandidates.map((cand, idx) => {{
         const cosNorm = Math.max(0, Math.min(1, (cand.similarity_score + 1.0) * 0.5));
         const itemTags = new Set((cand.tags || []).map(t => t.toLowerCase()));
         let inter = 0;
@@ -537,11 +560,21 @@ def render_html(embedded_payload_json: str) -> str:
         const genreBonus = cand.genre === primaryGenre ? 1.0 : 0.0;
         const quality = Math.max(0, Math.min(1, ((cand.rating || 7.8) - 6.5) / 3.0));
         const s2 = 0.62 * cosNorm + 0.20 * tagSim + 0.12 * genreBonus + 0.06 * quality;
-        return {{ ...cand, stage2_score: +s2.toFixed(4), affinity_pct: Math.min(99, Math.max(55, Math.round(s2 * 100))) }};
+        return {{
+          ...cand,
+          stage1_rank: idx + 1,
+          stage2_score: +s2.toFixed(4),
+          affinity_pct: Math.min(99, Math.max(55, Math.round(s2 * 100)))
+        }};
       }});
 
       withS2.sort((a, b) => b.stage2_score - a.stage2_score);
-      if (diversityLambda >= 0.999) return withS2.slice(0, topK);
+      if (diversityLambda >= 0.999) {{
+        return withS2.slice(0, topK).map((it, idx) => ({{
+          ...it,
+          rank_delta: it.stage1_rank - (idx + 1)
+        }}));
+      }}
 
       const selected = [];
       const selectedVecs = [];
@@ -562,7 +595,8 @@ def render_html(embedded_payload_json: str) -> str:
           }}
         }}
         const chosen = remaining.splice(bestIdx, 1)[0];
-        selected.push(chosen);
+        const finalRank = selected.length + 1;
+        selected.push({{ ...chosen, rank_delta: chosen.stage1_rank - finalRank }});
         const emb = EMBEDDED_DATA.item_embeddings[String(chosen.id)];
         if (emb) selectedVecs.push(emb);
       }}
@@ -676,18 +710,62 @@ def render_html(embedded_payload_json: str) -> str:
 
     function computeClientColdItem(title, genre, tags) {{
       const t0 = performance.now();
-      const itemVec = buildColdEmbedding(genre, tags);
+      const stopWords = new Set(["the", "and", "for", "with", "into", "from", "that", "this", "untitled"]);
+      const rawTokens = (title || "").toLowerCase().match(/[a-z0-9\\-]+/g) || [];
+      const titleTokens = rawTokens.filter(tok => tok.length >= 2 && !stopWords.has(tok));
+      const expandedTags = Array.from(new Set([...tags, ...titleTokens]));
+      const queryTerms = new Set(expandedTags);
+
+      const towerVec = buildColdEmbedding(genre, expandedTags);
+      const lexScores = EMBEDDED_DATA.catalog.map(item => {{
+        const itTitle = (item.title || "").toLowerCase();
+        const itDesc = (item.description || "").toLowerCase();
+        const itDir = (item.director || "").toLowerCase();
+        const itTags = (item.tags || []).join(" ").toLowerCase();
+        let sc = 0;
+        queryTerms.forEach(term => {{
+          if (itTitle.includes(term)) sc += titleTokens.includes(term) ? 3.0 : 1.5;
+          if (itTags.includes(term)) sc += 2.0;
+          if (itDir.includes(term)) sc += 1.5;
+          if (itDesc.includes(term)) sc += 0.8;
+        }});
+        return sc;
+      }});
+      const maxLex = Math.max(0, ...lexScores);
+      const normLex = maxLex > 0 ? lexScores.map(s => s / maxLex) : lexScores;
+
+      let itemVec = towerVec;
+      if (maxLex > 0) {{
+        const dim = towerVec.length;
+        const lexCent = new Array(dim).fill(0);
+        EMBEDDED_DATA.catalog.forEach((it, idx) => {{
+          const w = normLex[idx];
+          if (w > 0) {{
+            const e = EMBEDDED_DATA.item_embeddings[String(it.id)];
+            for (let d = 0; d < dim; d++) lexCent[d] += e[d] * w;
+          }}
+        }});
+        const lcNorm = normalizeVec(lexCent);
+        itemVec = normalizeVec(towerVec.map((v, d) => 0.55 * v + 0.45 * lcNorm[d]));
+      }}
+
       activeQueryCoord = projectQueryTo2D(itemVec);
-      const scored = EMBEDDED_DATA.catalog.map(item => {{
-        const sim = dotProduct(itemVec, EMBEDDED_DATA.item_embeddings[String(item.id)]);
-        return {{ ...item, similarity_score: +sim.toFixed(4), affinity_pct: Math.min(99, Math.max(55, Math.round((sim + 1) * 50))) }};
-      }}).sort((a, b) => b.similarity_score - a.similarity_score);
+      const scored = EMBEDDED_DATA.catalog.map((item, idx) => {{
+        const rawSim = dotProduct(itemVec, EMBEDDED_DATA.item_embeddings[String(item.id)]);
+        const blended = 0.72 * ((rawSim + 1) * 0.5) + 0.28 * normLex[idx];
+        return {{
+          ...item,
+          similarity_score: +rawSim.toFixed(4),
+          stage2_score: +blended.toFixed(4),
+          affinity_pct: Math.min(99, Math.max(55, Math.round(blended * 100)))
+        }};
+      }}).sort((a, b) => b.stage2_score - a.stage2_score);
       const elapsed = Math.max(0.14, performance.now() - t0);
       return {{
         cold_start: "item",
         custom_title: title || "Untitled Pitch",
         preferred_genre: genre,
-        preferred_tags: tags,
+        preferred_tags: expandedTags,
         index_backend: "faiss_flat",
         watch_history: [],
         recommendations: scored.slice(0, 6),
@@ -929,11 +1007,22 @@ def render_html(embedded_payload_json: str) -> str:
         const watchBtn = activeMode === "existing"
           ? `<button data-watch-id="${{m.id}}" class="watch-btn text-[11px] font-mono text-zinc-300 hover:text-zinc-950 hover:bg-zinc-100 bg-zinc-900 border border-zinc-700 px-2 py-0.5 rounded-full transition shrink-0">+ Watch</button>`
           : "";
+        let deltaPill = "";
+        if (activeMode === "existing" && data.stage2_enabled && typeof m.rank_delta === "number") {{
+          if (m.rank_delta > 0) {{
+            deltaPill = `<span class="font-mono text-[10px] text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-2 py-0.5 rounded-full">↑ +${{m.rank_delta}}</span>`;
+          }} else if (m.rank_delta < 0) {{
+            deltaPill = `<span class="font-mono text-[10px] text-amber-200 bg-black/55 border border-white/15 px-2 py-0.5 rounded-full">↓ ${{m.rank_delta}}</span>`;
+          }}
+        }}
         return `
           <article data-card-id="${{m.id}}" class="poster-card rounded-2xl overflow-hidden flex flex-col cursor-pointer">
             <div class="poster-${{m.genre}} relative h-44 p-5 flex flex-col justify-between film-grain border-b border-zinc-800/80">
-              <div class="relative z-10 flex items-center justify-between">
-                <span class="font-mono text-[11px] text-zinc-100 bg-black/55 backdrop-blur-sm border border-white/15 px-2 py-0.5 rounded">#0${{idx + 1}}</span>
+              <div class="relative z-10 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono text-[11px] text-zinc-100 bg-black/55 backdrop-blur-sm border border-white/15 px-2 py-0.5 rounded">#0${{idx + 1}}</span>
+                  ${{deltaPill}}
+                </div>
                 <span class="font-mono text-[11px] font-semibold text-white bg-white/15 backdrop-blur-sm border border-white/20 px-2.5 py-0.5 rounded-full">${{m.affinity_pct}}% match</span>
               </div>
               <div class="relative z-10">
@@ -1116,20 +1205,91 @@ def render_html(embedded_payload_json: str) -> str:
       URL.revokeObjectURL(url);
     }});
 
+    const catalogModal = document.getElementById("catalogModal");
+    const catalogSearchInput = document.getElementById("catalogSearchInput");
+    const catalogSearchResults = document.getElementById("catalogSearchResults");
+
+    async function renderCatalogSearch(query) {{
+      const q = (query || "").trim().toLowerCase();
+      let items = [];
+      if (!IS_STATIC_HOST) {{
+        try {{
+          const r = await fetch(`/api/v1/catalog?q=${{encodeURIComponent(q)}}&limit=25`);
+          if (r.ok) items = (await r.json()).items;
+        }} catch (e) {{}}
+      }}
+      if (items.length === 0) {{
+        const allItems = Object.values(catalogById);
+        items = q
+          ? allItems.filter(it =>
+              it.title.toLowerCase().includes(q) ||
+              (it.director || "").toLowerCase().includes(q) ||
+              it.genre.toLowerCase().includes(q) ||
+              (it.description || "").toLowerCase().includes(q) ||
+              (it.tags || []).some(t => t.toLowerCase().includes(q))
+            )
+          : allItems;
+      }}
+      if (items.length === 0) {{
+        catalogSearchResults.innerHTML = `<div class="p-6 text-center text-xs font-mono text-zinc-500">No catalog films matched "${{q}}".</div>`;
+        return;
+      }}
+      catalogSearchResults.innerHTML = items.slice(0, 24).map(it => `
+        <button data-cat-id="${{it.id}}" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-zinc-900 flex items-center justify-between gap-3 transition">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="poster-${{it.genre}} w-7 h-9 rounded border border-white/15 shrink-0"></div>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-zinc-100 truncate">${{it.title}}</div>
+              <div class="text-[11px] font-mono text-zinc-500 truncate">${{it.director || "Studio"}} · ${{it.year}} · ${{(it.tags || []).slice(0, 3).join(", ")}}</div>
+            </div>
+          </div>
+          <span class="${{GENRE_BADGE_CLASSES[it.genre] || "text-zinc-300 bg-zinc-800 border-zinc-700"}} border text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0">${{it.genre}}</span>
+        </button>
+      `).join("");
+      catalogSearchResults.querySelectorAll("button").forEach(btn => {{
+        btn.addEventListener("click", () => {{
+          catalogModal.classList.add("hidden");
+          openItemModal(parseInt(btn.dataset.catId));
+        }});
+      }});
+    }}
+
+    function openCatalogModal() {{
+      catalogModal.classList.remove("hidden");
+      catalogSearchInput.value = "";
+      renderCatalogSearch("");
+      setTimeout(() => catalogSearchInput.focus(), 30);
+    }}
+    document.getElementById("openCatalogBtn").addEventListener("click", openCatalogModal);
+    document.getElementById("closeCatalogModalBtn").addEventListener("click", () => catalogModal.classList.add("hidden"));
+    document.getElementById("catalogModalBackdrop").addEventListener("click", () => catalogModal.classList.add("hidden"));
+    catalogSearchInput.addEventListener("input", (e) => renderCatalogSearch(e.target.value));
+    document.addEventListener("keydown", (e) => {{
+      if (e.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) {{
+        e.preventDefault();
+        openCatalogModal();
+      }} else if (e.key === "Escape") {{
+        catalogModal.classList.add("hidden");
+        itemModal.classList.add("hidden");
+      }}
+    }});
+
     async function bootstrap() {{
       renderTagChipGroup("tagChipsUserContainer", selectedColdUserTags, () => activeMode === "coldUser" && executeColdUser());
       renderTagChipGroup("tagChipsItemContainer", selectedColdItemTags, () => activeMode === "coldItem" && executeColdItem());
 
       if (!EMBEDDED_DATA) {{
-        const [uRes, mapRes, metRes] = await Promise.all([
+        const [uRes, mapRes, metRes, catRes] = await Promise.all([
           fetch("/api/v1/users"),
           fetch("/api/v1/latent-map"),
-          fetch("/api/v1/metrics?k=10&index_type=hnsw&use_stage2=true")
+          fetch("/api/v1/metrics?k=10&index_type=hnsw&use_stage2=true"),
+          fetch("/api/v1/catalog?limit=100")
         ]);
         catalogUsers = (await uRes.json()).slice(0, 30);
         const mapJson = await mapRes.json();
         latentItems = mapJson.items;
         pcaProj = mapJson.pca_projection;
+        (await catRes.json()).items.forEach(m => {{ catalogById[m.id] = m; }});
         const met = await metRes.json();
         document.getElementById("kpiHit10").textContent = (met["HitRate@10"] * 100).toFixed(1) + "%";
         document.getElementById("footerHit10").textContent = (met["HitRate@10"] * 100).toFixed(1) + "%";
@@ -1149,6 +1309,23 @@ def render_html(embedded_payload_json: str) -> str:
           const ml = EMBEDDED_DATA.movielens;
           document.getElementById("ml100kBanner").classList.remove("hidden");
           document.getElementById("ml100kStats").textContent = `Hit@10: ${{(ml["HitRate@10"] * 100).toFixed(1)}}% · NDCG@10: ${{ml["NDCG@10"].toFixed(3)}}`;
+        }}
+        if (EMBEDDED_DATA.all_benchmarks && EMBEDDED_DATA.all_benchmarks.length > 0) {{
+          document.getElementById("drawerBaselineBox").classList.remove("hidden");
+          document.getElementById("drawerBaselineBars").innerHTML = EMBEDDED_DATA.all_benchmarks.map(b => {{
+            const pct = Math.round((b["HitRate@10"] || 0) * 100);
+            const isTwoStage = b.model.includes("Two-Stage");
+            const barCls = isTwoStage ? "bg-emerald-400" : (b.model.includes("Two-Tower") ? "bg-sky-400" : "bg-zinc-600");
+            return `
+              <div>
+                <div class="flex justify-between text-zinc-400 mb-0.5">
+                  <span class="${{isTwoStage ? "text-zinc-100 font-semibold" : ""}}">${{b.model}}</span>
+                  <span class="text-zinc-200">${{pct}}%</span>
+                </div>
+                <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden"><div class="h-full ${{barCls}} rounded-full" style="width:${{pct}}%"></div></div>
+              </div>
+            `;
+          }}).join("");
         }}
       }}
 
@@ -1210,10 +1387,12 @@ def build_all() -> None:
 
     bench_path = os.path.join(ROOT_DIR, "benchmarks", "results.json")
     benchmark_summary = None
+    all_benchmarks = []
     if os.path.exists(bench_path):
         with open(bench_path, "r", encoding="utf-8") as bf:
             bdata = json.load(bf)
-            for row in bdata.get("results", []):
+            all_benchmarks = bdata.get("results", [])
+            for row in all_benchmarks:
                 if "Two-Stage" in row.get("model", "") or "HNSW" in row.get("model", ""):
                     benchmark_summary = row
     if benchmark_summary is None:
@@ -1237,6 +1416,7 @@ def build_all() -> None:
         "latent_map": latent_info["items"],
         "pca_projection": latent_info["pca_projection"],
         "benchmark": benchmark_summary,
+        "all_benchmarks": all_benchmarks,
         "movielens": movielens_summary,
     }
 

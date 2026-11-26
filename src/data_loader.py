@@ -1,6 +1,7 @@
 # src/data_loader.py
 import json
 import random
+import re
 from collections import Counter
 from typing import Any, Dict, List, Tuple
 
@@ -44,6 +45,49 @@ def encode_tags_multihot(tags: List[str], tag_vocab: Dict[str, int]) -> np.ndarr
 def build_catalog_tag_matrix(catalog: List[Dict[str, Any]], tag_vocab: Dict[str, int]) -> np.ndarray:
     """Build (num_items, num_tags) normalized metadata feature matrix."""
     return np.vstack([encode_tags_multihot(item.get("tags", []), tag_vocab) for item in catalog])
+
+
+def extract_title_lexical_signals(
+    title: str,
+    tags: List[str],
+    catalog: List[Dict[str, Any]],
+    tag_vocab: Dict[str, int],
+) -> Tuple[List[str], np.ndarray]:
+    """
+    Merge explicit tags with title keyword tokens into expanded vocab tags plus
+    a normalized lexical similarity vector across catalog titles, descriptions, and tags.
+    """
+    stop_words = {"the", "and", "for", "with", "into", "from", "that", "this", "untitled"}
+    raw_tokens = re.findall(r"[a-z0-9\-]+", title.lower())
+    title_tokens = [tok for tok in raw_tokens if len(tok) >= 2 and tok not in stop_words]
+
+    merged_tags = list(dict.fromkeys([t.lower().strip() for t in tags] + [t for t in title_tokens if t in tag_vocab]))
+    query_terms = set(title_tokens) | {t.lower().strip() for t in tags}
+
+    lex_scores = np.zeros(len(catalog), dtype=np.float32)
+    if query_terms:
+        for idx, item in enumerate(catalog):
+            item_title = item.get("title", "").lower()
+            item_desc = item.get("description", "").lower()
+            item_dir = item.get("director", "").lower()
+            item_tags = " ".join(item.get("tags", [])).lower()
+
+            score = 0.0
+            for term in query_terms:
+                if term in item_title:
+                    score += 3.0 if term in title_tokens else 1.5
+                if term in item_tags:
+                    score += 2.0
+                if term in item_dir:
+                    score += 1.5
+                if term in item_desc:
+                    score += 0.8
+            lex_scores[idx] = score
+
+    max_lex = float(np.max(lex_scores)) if len(lex_scores) > 0 else 0.0
+    if max_lex > 1e-8:
+        lex_scores /= max_lex
+    return merged_tags, lex_scores
 
 
 def generate_user_data(
