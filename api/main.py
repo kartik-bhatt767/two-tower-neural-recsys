@@ -1,34 +1,66 @@
 # api/main.py
 import os
-import json
-from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, status
-from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+from typing import Any, Dict, List
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+
+from src.data_loader import GENRES
 from src.engine import RecommendationEngine
 
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static")
+CATALOG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "catalog.json")
+
+rec_engine = RecommendationEngine(catalog_path=CATALOG_PATH, embed_dim=32, num_users=150)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if not rec_engine.catalog:
+        rec_engine.initialize()
+    yield
+
+
 app = FastAPI(
-    title="🎬 Two-Tower Neural Recommendation Microservice",
-    description="High-Throughput Deep Learning Candidate Retrieval Architecture for sub-millisecond personalized recommendations.",
-    version="1.0.0"
+    title="Two-Tower Neural Recommendation Microservice",
+    description=(
+        "High-Throughput Deep Learning Candidate Retrieval Architecture backed by "
+        "FAISS Vector Indexing for sub-millisecond personalized recommendations."
+    ),
+    version="2.0.0",
+    lifespan=lifespan,
 )
 
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static")
-rec_engine = RecommendationEngine(catalog_path=os.path.join(os.path.dirname(__file__), "..", "data", "catalog.json"))
+# Ensure engine is ready even when imported directly by ASGI test clients without lifespan
+rec_engine.initialize()
 
 if os.path.exists(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-@app.on_event("startup")
-def startup_event():
-    rec_engine.initialize()
-    print("Recommendation engine initialized and ready.")
 
 class RecommendRequest(BaseModel):
     user_id: int = Field(default=0, ge=0, description="User index to recommend for")
-    top_k: int = Field(default=5, ge=1, le=20, description="Number of recommendations")
+    top_k: int = Field(default=6, ge=1, le=30, description="Number of candidates to retrieve")
     exclude_watched: bool = Field(default=True, description="Filter out previously watched items")
+    index_type: str = Field(default="hnsw", description="Vector index backend: hnsw, flat, or ivf")
+
+
+class ColdStartUserRequest(BaseModel):
+    preferred_genre: str = Field(default="Sci-Fi", description=f"Genre preference from {GENRES}")
+    tags: List[str] = Field(default_factory=lambda: ["ai", "space", "time"], description="Metadata interest tags")
+    top_k: int = Field(default=6, ge=1, le=20)
+    index_type: str = Field(default="flat")
+
+
+class ColdStartItemRequest(BaseModel):
+    title: str = Field(..., min_length=1, description="Title of the unseen cold-start item")
+    genre: str = Field(default="Sci-Fi", description=f"Primary genre from {GENRES}")
+    tags: List[str] = Field(default_factory=lambda: ["cyberpunk", "ai", "simulation"])
+    top_k: int = Field(default=5, ge=1, le=20)
+
 
 @app.get("/", include_in_schema=False)
 def serve_ui():
@@ -37,39 +69,87 @@ def serve_ui():
         return FileResponse(index_file)
     return {"message": "Two-Tower RecSys API active. Visit /docs for Swagger UI."}
 
+
 @app.get("/health", tags=["Monitoring"])
-def health():
+def health() -> Dict[str, Any]:
     return {
         "status": "HEALTHY",
         "service": "two-tower-neural-recsys",
+        "inference_mode": rec_engine.inference_mode,
         "total_users": len(rec_engine.users),
-        "total_items": len(rec_engine.catalog)
+        "total_items": len(rec_engine.catalog),
+        "vector_indexes": {k: v.info() for k, v in rec_engine.indexes.items()},
     }
 
+
 @app.get("/api/v1/users", tags=["Users"])
-def get_users():
+def get_users() -> List[Dict[str, Any]]:
     return [
         {
             "user_id": u["user_id"],
             "username": u["username"],
             "primary_genre": u["primary_genre"],
-            "history_count": len(u["history_item_ids"])
+            "preferred_tags": u.get("preferred_tags", []),
+            "history_count": len(u["history_item_ids"]),
+            "holdout_count": len(u.get("holdout_item_ids", [])),
         }
         for u in rec_engine.users
     ]
 
+
 @app.post("/api/v1/recommend", tags=["Recommendation Engine"])
-def get_recommendations(req: RecommendRequest):
-    return rec_engine.recommend_for_user(
-        user_idx=req.user_id,
+def get_recommendations(req: RecommendRequest) -> Dict[str, Any]:
+    try:
+        return rec_engine.recommend_for_user(
+            user_idx=req.user_id,
+            top_k=req.top_k,
+            exclude_watched=req.exclude_watched,
+            index_type=req.index_type,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/v1/cold-start/user", tags=["Cold-Start Inference"])
+def cold_start_user_recommend(req: ColdStartUserRequest) -> Dict[str, Any]:
+    try:
+        return rec_engine.recommend_cold_start(
+            preferred_genre=req.preferred_genre,
+            tags=req.tags,
+            top_k=req.top_k,
+            index_type=req.index_type,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/v1/cold-start/item", tags=["Cold-Start Inference"])
+def cold_start_item_similarity(req: ColdStartItemRequest) -> Dict[str, Any]:
+    return rec_engine.match_cold_start_item(
+        title=req.title,
+        genre=req.genre,
+        tags=req.tags,
         top_k=req.top_k,
-        exclude_watched=req.exclude_watched
     )
 
+
+@app.get("/api/v1/latent-map", tags=["Visualization"])
+def get_latent_map() -> Dict[str, Any]:
+    return rec_engine.get_latent_space_map()
+
+
 @app.get("/api/v1/metrics", tags=["Benchmarks"])
-def get_evaluation_metrics():
-    return rec_engine.evaluate_metrics(k=5)
+def get_evaluation_metrics(
+    k: int = Query(default=10, ge=1, le=30),
+    index_type: str = Query(default="flat"),
+) -> Dict[str, Any]:
+    try:
+        return rec_engine.evaluate_metrics(k=k, index_type=index_type)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("api.main:app", host="0.0.0.0", port=8001, reload=True)
